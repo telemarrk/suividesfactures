@@ -1,12 +1,12 @@
 import { Invoice, Service, UserRole } from "./types";
 
 export const services: Service[] = [
-    { id: '1', name: 'SGDG', description: 'Direction Générale' },
-    { id: '2', name: 'SGRH', description: 'Ressources Humaines' },
-    { id: '3', name: 'SGFINANCES', description: 'Finances' },
-    { id: '4', name: 'SGINFORMAT', description: 'Informatique' },
-    { id: '5', name: 'SGCOMPUB', description: 'Commande Publique' },
-    { id: '6', name: 'SGCULTURE', description: 'Culture' },
+    { id: '1', name: 'SGDG', description: 'Direction Générale', password: 'password123' },
+    { id: '2', name: 'SGRH', description: 'Ressources Humaines', password: 'password123' },
+    { id: '3', name: 'SGFINANCES', description: 'Finances', password: 'password123' },
+    { id: '4', name: 'SGINFORMAT', description: 'Informatique', password: 'password123' },
+    { id: '5', name: 'SGCOMPUB', description: 'Commande Publique', password: 'password123' },
+    { id: '6', name: 'SGCULTURE', description: 'Culture', password: 'password123' },
 ];
 
 export const invoices: Invoice[] = [

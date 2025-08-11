@@ -32,6 +32,9 @@ import { ThemeToggle } from "@/components/theme-toggle"
 function LoginPageContent() {
     const router = useRouter();
     const [selectedService, setSelectedService] = useState<UserRole | null>(null);
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+
 
     const sortedServices = useMemo(() => {
     const specialServices: string[] = ['SGFINANCES', 'SGCOMPUB'];
@@ -53,13 +56,20 @@ function LoginPageContent() {
   }, []);
 
   const handleLogin = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     if (!selectedService) {
-        e.preventDefault();
-        alert("Veuillez sélectionner un service.");
+        setError("Veuillez sélectionner un service.");
         return;
     }
-    localStorage.setItem("user_service", selectedService);
-    router.push("/dashboard");
+    
+    const serviceData = services.find(s => s.name === selectedService);
+
+    if (serviceData && serviceData.password === password) {
+        localStorage.setItem("user_service", selectedService);
+        router.push("/dashboard");
+    } else {
+        setError("Mot de passe incorrect.");
+    }
   };
 
   return (
@@ -77,30 +87,33 @@ function LoginPageContent() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="service">Nom du service</Label>
-              <Select required onValueChange={(value) => setSelectedService(value as UserRole)}>
-                  <SelectTrigger id="service">
-                      <SelectValue placeholder="Sélectionner un service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                      {sortedServices.map(service => (
-                          <SelectItem key={service.id} value={service.name}>
-                              {service.description} ({service.name})
-                          </SelectItem>
-                      ))}
-                  </SelectContent>
-              </Select>
+          <form>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="service">Nom du service</Label>
+                <Select required onValueChange={(value) => setSelectedService(value as UserRole)}>
+                    <SelectTrigger id="service">
+                        <SelectValue placeholder="Sélectionner un service" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {sortedServices.map(service => (
+                            <SelectItem key={service.id} value={service.name}>
+                                {service.description} ({service.name})
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="password">Mot de passe</Label>
+                <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+              </div>
+              {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+              <Button type="submit" className="w-full" onClick={handleLogin}>
+                Se connecter
+              </Button>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input id="password" type="password" defaultValue="1234" required />
-            </div>
-            <Button type="submit" className="w-full" onClick={handleLogin}>
-              Se connecter
-            </Button>
-          </div>
+          </form>
         </CardContent>
       </Card>
     </div>

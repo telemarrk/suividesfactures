@@ -24,25 +24,29 @@ interface ServiceDialogProps {
 export function ServiceDialog({ isOpen, onClose, onSave, service }: ServiceDialogProps) {
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
+    const [password, setPassword] = useState('')
 
     useEffect(() => {
         if(service) {
             setName(service.name)
             setDescription(service.description)
+            setPassword(service.password || '')
         } else {
             setName('')
             setDescription('')
+            setPassword('')
         }
     }, [service])
 
     const handleSave = () => {
         // Basic validation
-        if(!name || !description) return
+        if(!name || !description || !password) return
 
         onSave({
             id: service?.id || new Date().toISOString(),
             name: name as any, // In a real app, use a select with UserRole
             description,
+            password,
         })
     }
 
@@ -67,6 +71,12 @@ export function ServiceDialog({ isOpen, onClose, onSave, service }: ServiceDialo
               Description
             </Label>
             <Input id="description" value={description} onChange={e => setDescription(e.target.value)} className="col-span-3" placeholder="Ressources Humaines" />
+          </div>
+           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="password" className="text-right">
+              Mot de passe
+            </Label>
+            <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="col-span-3" />
           </div>
         </div>
         <DialogFooter>

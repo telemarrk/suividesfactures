@@ -37,4 +37,5 @@ export interface Service {
   id: string;
   name: UserRole;
   description: string;
+  password?: string;
 }
