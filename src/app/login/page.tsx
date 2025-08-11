@@ -1,7 +1,6 @@
 
 "use client";
 
-import Link from "next/link"
 import { useTheme } from "next-themes"
 import { Moon, Sun, Workflow } from "lucide-react"
 
@@ -23,38 +22,50 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ThemeProvider } from "@/components/theme-provider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { services } from "@/lib/data";
+import { services as defaultServices } from "@/lib/data";
 import type { Service, UserRole } from "@/lib/types";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/logo"
 import { ThemeToggle } from "@/components/theme-toggle"
 
+const SERVICES_STORAGE_KEY = "app_services";
+
 function LoginPageContent() {
     const router = useRouter();
+    const [allServices, setAllServices] = useState<Service[]>([]);
     const [selectedService, setSelectedService] = useState<UserRole | null>(null);
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
+    useEffect(() => {
+        const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
+        const services = storedServices ? JSON.parse(storedServices) : defaultServices;
+        setAllServices(services);
+        if (!storedServices) {
+            localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(defaultServices));
+        }
+    }, []);
+
 
     const sortedServices = useMemo(() => {
-    const specialServices: string[] = ['SGFINANCES', 'SGCOMPUB'];
-    const special: Service[] = [];
-    const regular: Service[] = [];
+        const specialServices: string[] = ['SGFINANCES', 'SGCOMPUB'];
+        const special: Service[] = [];
+        const regular: Service[] = [];
 
-    services.forEach(service => {
-      if (specialServices.includes(service.name)) {
-        special.push(service);
-      } else {
-        regular.push(service);
-      }
-    });
+        allServices.forEach(service => {
+        if (specialServices.includes(service.name)) {
+            special.push(service);
+        } else {
+            regular.push(service);
+        }
+        });
 
-    special.sort((a, b) => specialServices.indexOf(a.name) - specialServices.indexOf(b.name));
-    regular.sort((a, b) => a.description.localeCompare(b.description));
+        special.sort((a, b) => specialServices.indexOf(a.name) - specialServices.indexOf(b.name));
+        regular.sort((a, b) => a.description.localeCompare(b.description));
 
-    return [...special, ...regular];
-  }, []);
+        return [...special, ...regular];
+  }, [allServices]);
 
   const handleLogin = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -67,7 +78,7 @@ function LoginPageContent() {
     if (selectedService === 'SGFINANCES' || selectedService === 'SGCOMPUB') {
         correctPassword = '1234';
     } else {
-        const serviceData = services.find(s => s.name === selectedService);
+        const serviceData = allServices.find(s => s.name === selectedService);
         correctPassword = serviceData?.password || '';
     }
 

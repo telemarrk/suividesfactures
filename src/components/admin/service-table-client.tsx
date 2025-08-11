@@ -1,6 +1,7 @@
+
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { MoreHorizontal, PlusCircle, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -28,14 +29,32 @@ import {
 import { ServiceDialog } from "./service-dialog"
 import type { Service } from "@/lib/types"
 
+const SERVICES_STORAGE_KEY = "app_services";
+
 interface ServiceTableClientProps {
   initialServices: Service[]
 }
 
 export function ServiceTableClient({ initialServices }: ServiceTableClientProps) {
-  const [services, setServices] = useState(initialServices)
+  const [services, setServices] = useState<Service[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
+
+  useEffect(() => {
+    const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
+    if (storedServices) {
+      setServices(JSON.parse(storedServices));
+    } else {
+      setServices(initialServices);
+      localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(initialServices));
+    }
+  }, [initialServices]);
+
+  const updateServices = (updatedServices: Service[]) => {
+    setServices(updatedServices);
+    localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(updatedServices));
+  };
+
 
   const handleOpenDialog = (service: Service | null = null) => {
     setSelectedService(service)
@@ -48,18 +67,21 @@ export function ServiceTableClient({ initialServices }: ServiceTableClientProps)
   }
 
   const handleSaveService = (service: Service) => {
+    let updatedServices;
     if (selectedService) {
       // Edit
-      setServices(services.map(s => s.id === service.id ? service : s))
+      updatedServices = services.map(s => s.id === service.id ? service : s);
     } else {
       // Add
-      setServices([...services, service])
+      updatedServices = [...services, service];
     }
+    updateServices(updatedServices);
     handleCloseDialog()
   }
 
   const handleDeleteService = (serviceId: string) => {
-    setServices(services.filter(s => s.id !== serviceId))
+    const updatedServices = services.filter(s => s.id !== serviceId);
+    updateServices(updatedServices);
   }
 
   return (
