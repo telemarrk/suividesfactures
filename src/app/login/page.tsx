@@ -26,33 +26,8 @@ import { services } from "@/lib/data";
 import type { Service, UserRole } from "@/lib/types";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-
-function ThemeToggle() {
-  const { setTheme } = useTheme()
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Basculer le thème</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Clair
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Sombre
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          Système
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
+import { Logo } from "@/components/logo"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 function LoginPageContent() {
     const router = useRouter();
@@ -95,8 +70,7 @@ function LoginPageContent() {
       <Card className="mx-auto max-w-sm w-full">
         <CardHeader>
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Workflow className="h-8 w-8 text-primary" />
-            <CardTitle className="text-2xl font-bold">FacturFlow</CardTitle>
+            <Logo isLoginPage={true} />
           </div>
           <CardDescription>
             Entrez votre service ci-dessous pour vous connecter

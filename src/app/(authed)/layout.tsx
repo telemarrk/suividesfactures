@@ -9,12 +9,10 @@ import { UserNav } from "@/components/user-nav";
 import { Logo } from "@/components/logo";
 import { useEffect, useState } from "react";
 import type { UserRole } from "@/lib/types";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeProvider } from "@/components/theme-provider";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function AuthedLayoutContent({ children }: { children: React.ReactNode }) {
   const [userService, setUserService] = useState<UserRole | null>(null);
 
   useEffect(() => {
@@ -117,6 +115,7 @@ export default function DashboardLayout({
           <div className="w-full flex-1">
             {/* Can add search form here */}
           </div>
+          <ThemeToggle />
           <UserNav />
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
@@ -125,4 +124,22 @@ export default function DashboardLayout({
       </div>
     </div>
   );
+}
+
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+    return (
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+        >
+            <AuthedLayoutContent>{children}</AuthedLayoutContent>
+        </ThemeProvider>
+    )
 }
