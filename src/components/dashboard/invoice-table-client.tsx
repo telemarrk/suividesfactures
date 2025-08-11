@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
-import { MoreHorizontal, FileText, CheckCircle2, XCircle, Clock, Send, Eye } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { MoreHorizontal, FileText, CheckCircle2, XCircle, Clock, MessageSquare, Trash, Pencil, Send, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CommentsDrawer } from "./comments-drawer";
-import type { Invoice, InvoiceStatus } from "@/lib/types";
+import type { Invoice, InvoiceStatus, UserRole } from "@/lib/types";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 interface InvoiceTableClientProps {
   initialInvoices: Invoice[];
@@ -42,9 +43,28 @@ const CustomBadge = ({ color, children, ...props }: { color: string, children: R
 
 
 export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps) {
-  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [userService, setUserService] = useState<UserRole | null>(null);
+
+  useEffect(() => {
+    const service = localStorage.getItem("user_service") as UserRole | null;
+    setUserService(service);
+  }, []);
+
+  useEffect(() => {
+    if (userService) {
+      const filteredInvoices = initialInvoices.filter(inv => {
+        const isPending = inv.status !== 'Mandatée' && inv.status !== 'Rejetée';
+        if (userService === 'SGFINANCES' || userService === 'SGCOMPUB') {
+          return isPending;
+        }
+        return inv.service === userService && isPending;
+      });
+      setInvoices(filteredInvoices);
+    }
+  }, [userService, initialInvoices]);
 
   const handleViewComments = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
@@ -57,8 +77,8 @@ export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps)
   };
   
   const handleAction = (invoiceId: string, action: "approve" | "reject") => {
-    // This is a mock function. In a real app, this would be a server action.
     console.log(`Invoice ${invoiceId} action: ${action}`);
+    setInvoices(currentInvoices => currentInvoices.filter(inv => inv.id !== invoiceId));
   };
 
 
@@ -81,13 +101,11 @@ export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps)
                 <TableHead>Nom du fichier</TableHead>
                 <TableHead>Service</TableHead>
                 <TableHead>Statut</TableHead>
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.filter(inv => inv.status !== 'Mandatée' && inv.status !== 'Rejetée').map((invoice) => {
+              {invoices.map((invoice) => {
                 const config = statusConfig[invoice.status];
                 return (
                   <TableRow key={invoice.id}>
@@ -106,29 +124,55 @@ export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps)
                           </div>
                        </CustomBadge>
                     </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                           <DropdownMenuItem onSelect={() => alert('Ouverture du PDF non implémentée.')}>Ouvrir le PDF</DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleViewComments(invoice)}>Voir les commentaires</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onSelect={() => handleAction(invoice.id, 'approve')} className="text-green-600 focus:text-green-700 focus:bg-green-50">
-                            <CheckCircle2 className="mr-2 h-4 w-4"/>
-                            Approuver
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleAction(invoice.id, 'reject')} className="text-red-600 focus:text-red-700 focus:bg-red-50">
-                            <XCircle className="mr-2 h-4 w-4"/>
-                            Rejeter
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                    <TableCell className="text-right">
+                       <TooltipProvider>
+                        <div className="flex items-center justify-end gap-2">
+                           <Tooltip>
+                            <TooltipTrigger asChild>
+                               <Button variant="ghost" size="icon" onClick={() => alert('Ouverture du PDF non implémentée.')}>
+                                <Eye className="h-4 w-4" />
+                                <span className="sr-only">Ouvrir le PDF</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Ouvrir le PDF</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={() => handleViewComments(invoice)}>
+                                <MessageSquare className="h-4 w-4" />
+                                <span className="sr-only">Voir les commentaires</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Voir les commentaires</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                               <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => handleAction(invoice.id, 'approve')}>
+                                <CheckCircle2 className="h-4 w-4" />
+                                <span className="sr-only">Approuver</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Approuver</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                             <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleAction(invoice.id, 'reject')}>
+                                <XCircle className="h-4 w-4" />
+                                <span className="sr-only">Rejeter</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Rejeter</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
                     </TableCell>
                   </TableRow>
                 );

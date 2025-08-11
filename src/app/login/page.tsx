@@ -23,8 +23,9 @@ import { Label } from "@/components/ui/label"
 import { ThemeProvider } from "@/components/theme-provider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { services } from "@/lib/data";
-import type { Service } from "@/lib/types";
-import { useMemo } from "react";
+import type { Service, UserRole } from "@/lib/types";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 function ThemeToggle() {
   const { setTheme } = useTheme()
@@ -54,6 +55,9 @@ function ThemeToggle() {
 }
 
 function LoginPageContent() {
+    const router = useRouter();
+    const [selectedService, setSelectedService] = useState<UserRole | null>(null);
+
     const sortedServices = useMemo(() => {
     const specialServices: string[] = ['SGFINANCES', 'SGCOMPUB'];
     const special: Service[] = [];
@@ -72,6 +76,16 @@ function LoginPageContent() {
 
     return [...special, ...regular];
   }, []);
+
+  const handleLogin = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!selectedService) {
+        e.preventDefault();
+        alert("Veuillez sélectionner un service.");
+        return;
+    }
+    localStorage.setItem("user_service", selectedService);
+    router.push("/dashboard");
+  };
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
@@ -92,7 +106,7 @@ function LoginPageContent() {
           <div className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="service">Nom du service</Label>
-              <Select required>
+              <Select required onValueChange={(value) => setSelectedService(value as UserRole)}>
                   <SelectTrigger id="service">
                       <SelectValue placeholder="Sélectionner un service" />
                   </SelectTrigger>
@@ -109,8 +123,8 @@ function LoginPageContent() {
               <Label htmlFor="password">Mot de passe</Label>
               <Input id="password" type="password" defaultValue="1234" required />
             </div>
-            <Button type="submit" className="w-full" asChild>
-              <Link href="/dashboard">Se connecter</Link>
+            <Button type="submit" className="w-full" onClick={handleLogin}>
+              Se connecter
             </Button>
           </div>
         </CardContent>
