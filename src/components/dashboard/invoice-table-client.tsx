@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -140,10 +141,17 @@ export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps)
                           </Tooltip>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" onClick={() => handleViewComments(invoice)}>
-                                <MessageSquare className="h-4 w-4" />
-                                <span className="sr-only">Voir les commentaires</span>
-                              </Button>
+                              <div className="relative">
+                                <Button variant="ghost" size="icon" onClick={() => handleViewComments(invoice)}>
+                                  <MessageSquare className="h-4 w-4" />
+                                  <span className="sr-only">Voir les commentaires</span>
+                                </Button>
+                                {invoice.comments.length > 0 && (
+                                  <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 justify-center p-1 text-xs">
+                                    {invoice.comments.length}
+                                  </Badge>
+                                )}
+                              </div>
                             </TooltipTrigger>
                             <TooltipContent>
                               <p>Voir les commentaires</p>
