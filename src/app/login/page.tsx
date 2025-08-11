@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link"
@@ -61,10 +62,16 @@ function LoginPageContent() {
         setError("Veuillez sélectionner un service.");
         return;
     }
-    
-    const serviceData = services.find(s => s.name === selectedService);
 
-    if (serviceData && serviceData.password === password) {
+    let correctPassword = "";
+    if (selectedService === 'SGFINANCES' || selectedService === 'SGCOMPUB') {
+        correctPassword = '1234';
+    } else {
+        const serviceData = services.find(s => s.name === selectedService);
+        correctPassword = serviceData?.password || '';
+    }
+
+    if (password === correctPassword && correctPassword !== '') {
         localStorage.setItem("user_service", selectedService);
         router.push("/dashboard");
     } else {
