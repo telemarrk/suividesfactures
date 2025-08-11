@@ -16,11 +16,11 @@ interface InvoiceTableClientProps {
 
 const statusConfig: Record<
   InvoiceStatus,
-  { icon: React.ElementType; color: "default" | "secondary" | "destructive" | "outline" | "accent" | "success" | "warning"; label: string }
+  { icon: React.ElementType; color: "default" | "secondary" | "destructive" | "outline" | "accent" | "success" | "warning" | "info" | "purple"; label: string }
 > = {
-  "En attente de validation Commande Publique": { icon: Clock, color: "warning", label: "Attente Commande Publique" },
+  "En attente de validation Commande Publique": { icon: Clock, color: "info", label: "Attente Commande Publique" },
   "En attente de validation Service": { icon: Clock, color: "warning", label: "Attente Service" },
-  "En attente de mandatement": { icon: Clock, color: "warning", label: "Attente Mandatement" },
+  "En attente de mandatement": { icon: Clock, color: "purple", label: "Attente Mandatement" },
   "Mandatée": { icon: CheckCircle2, color: "success", label: "Mandatée" },
   "Rejetée": { icon: XCircle, color: "destructive", label: "Rejetée" },
 };
@@ -28,8 +28,15 @@ const statusConfig: Record<
 const CustomBadge = ({ color, children, ...props }: { color: string, children: React.ReactNode } & React.HTMLAttributes<HTMLDivElement>) => {
   const badgeClasses: { [key: string]: string } = {
     success: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700',
-    warning: 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-700',
+    warning: 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-700',
+    info: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700',
+    purple: 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700',
   };
+  
+  if (color === "destructive") {
+    return <Badge {...props} variant="destructive">{children}</Badge>;
+  }
+
   return <Badge {...props} className={badgeClasses[color] || ''}>{children}</Badge>;
 }
 

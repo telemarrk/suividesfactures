@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { Home, History, Settings, Menu, Search, Workflow, Package2, Bell } from "lucide-react";
+import { Home, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { UserNav } from "@/components/user-nav";
 import { Logo } from "@/components/logo";
@@ -29,20 +27,6 @@ export default function DashboardLayout({
               >
                 <Home className="h-4 w-4" />
                 Tableau de bord
-              </Link>
-              <Link
-                href="/history"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-              >
-                <History className="h-4 w-4" />
-                Historique
-              </Link>
-              <Link
-                href="/admin/services"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-              >
-                <Settings className="h-4 w-4" />
-                Gérer les services
               </Link>
             </nav>
           </div>
@@ -75,20 +59,6 @@ export default function DashboardLayout({
                 >
                   <Home className="h-5 w-5" />
                   Tableau de bord
-                </Link>
-                <Link
-                  href="/history"
-                  className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
-                >
-                  <History className="h-5 w-5" />
-                  Historique
-                </Link>
-                <Link
-                  href="/admin/services"
-                  className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
-                >
-                  <Settings className="h-5 w-5" />
-                  Gérer les services
                 </Link>
               </nav>
             </SheetContent>
