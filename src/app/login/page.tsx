@@ -21,6 +21,10 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ThemeProvider } from "@/components/theme-provider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { services } from "@/lib/data";
+import type { Service } from "@/lib/types";
+import { useMemo } from "react";
 
 function ThemeToggle() {
   const { setTheme } = useTheme()
@@ -50,6 +54,25 @@ function ThemeToggle() {
 }
 
 function LoginPageContent() {
+    const sortedServices = useMemo(() => {
+    const specialServices: string[] = ['SGFINANCES', 'SGCOMPUB'];
+    const special: Service[] = [];
+    const regular: Service[] = [];
+
+    services.forEach(service => {
+      if (specialServices.includes(service.name)) {
+        special.push(service);
+      } else {
+        regular.push(service);
+      }
+    });
+
+    special.sort((a, b) => specialServices.indexOf(a.name) - specialServices.indexOf(b.name));
+    regular.sort((a, b) => a.description.localeCompare(b.description));
+
+    return [...special, ...regular];
+  }, []);
+
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
        <div className="absolute top-4 right-4">
@@ -69,12 +92,18 @@ function LoginPageContent() {
           <div className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="service">Nom du service</Label>
-              <Input
-                id="service"
-                type="text"
-                placeholder="SGRH"
-                required
-              />
+              <Select required>
+                  <SelectTrigger id="service">
+                      <SelectValue placeholder="Sélectionner un service" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {sortedServices.map(service => (
+                          <SelectItem key={service.id} value={service.name}>
+                              {service.description} ({service.name})
+                          </SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Mot de passe</Label>
