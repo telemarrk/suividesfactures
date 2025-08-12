@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { Invoice, ExpenseType } from '@/lib/types';
+import { Invoice, ExpenseType, UserRole } from '@/lib/types';
 import { invoices as defaultInvoices } from '@/lib/data';
 
 // IMPORTANT: This is a local development-only feature.
@@ -28,14 +28,20 @@ export async function GET() {
 
     // This is a simplified logic. In a real app, you would get this from a database.
     const newInvoices: Invoice[] = files.map((file, index) => {
-        const serviceName = file.split('-')[0].toUpperCase();
+        const serviceName = file.split('-')[0].toUpperCase() as UserRole;
+        
+        const bypassCompub = serviceName === 'CCAS' || serviceName === 'DRE';
+
+        const initialStatus = bypassCompub ? 'En attente de validation Service' : 'En attente de validation Commande Publique';
+        const initialHistoryEntry = { status: initialStatus, date: new Date().toISOString(), by: 'System' };
+        
         return {
             id: `INV-LOCAL-${index + 1}`,
             fileName: file,
-            service: serviceName as any, // This is an assumption based on file naming.
-            status: 'En attente de validation Commande Publique',
+            service: serviceName,
+            status: initialStatus,
             lastUpdated: new Date().toISOString(),
-            history: [{ status: 'En attente de validation Commande Publique', date: new Date().toISOString(), by: 'System' }],
+            history: [initialHistoryEntry],
             comments: [],
             expenseType: getExpenseType(file),
         };

@@ -122,7 +122,8 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                        inv.status === 'En attente de validation Service' ||
                        inv.status === 'En attente de mandatement';
             case 'SGCOMPUB':
-                 return inv.status === 'En attente de validation Commande Publique';
+                 return inv.status === 'En attente de validation Commande Publique' ||
+                        inv.status === 'En attente de validation Service';
             default:
                 return inv.service === userService && inv.status === 'En attente de validation Service';
         }
@@ -158,11 +159,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
     if (action === "approve") {
         if (invoice.status === 'En attente de validation Commande Publique') nextStatus = 'En attente de validation Service';
         else if (invoice.status === 'En attente de validation Service') {
-            if (invoice.service === 'SGFINANCES' || invoice.service === 'SGCOMPUB') {
-                nextStatus = 'En attente de mandatement';
-            } else {
-                nextStatus = 'En attente de mandatement';
-            }
+            nextStatus = 'En attente de mandatement';
         }
         else if (invoice.status === 'En attente de mandatement') nextStatus = 'Mandatée';
     } else {
