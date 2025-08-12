@@ -1,3 +1,4 @@
+
 import { invoices } from "@/lib/data";
 import { InvoiceTableClient } from "@/components/dashboard/invoice-table-client";
 

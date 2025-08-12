@@ -1,11 +1,29 @@
+
+"use client";
+
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { invoices } from "@/lib/data"
+import { invoices as defaultInvoices } from "@/lib/data"
 import { CheckCircle2, XCircle } from "lucide-react"
+import { useEffect, useState } from "react"
+import type { Invoice } from "@/lib/types"
+
+const INVOICES_STORAGE_KEY = "app_invoices";
 
 export default function HistoryPage() {
-  const completedInvoices = invoices.filter(
+  const [allInvoices, setAllInvoices] = useState<Invoice[]>([]);
+
+  useEffect(() => {
+      const storedInvoices = localStorage.getItem(INVOICES_STORAGE_KEY);
+      if (storedInvoices) {
+          setAllInvoices(JSON.parse(storedInvoices));
+      } else {
+          setAllInvoices(defaultInvoices);
+      }
+  }, []);
+
+  const completedInvoices = allInvoices.filter(
     (invoice) => invoice.status === "Mandatée" || invoice.status === "Rejetée"
   );
 

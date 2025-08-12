@@ -9,8 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CommentsDrawer } from "./comments-drawer";
-import type { Invoice, InvoiceStatus, UserRole } from "@/lib/types";
+import type { Invoice, InvoiceStatus, UserRole, Comment } from "@/lib/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { invoices as defaultInvoices } from "@/lib/data";
+
+const INVOICES_STORAGE_KEY = "app_invoices";
 
 interface InvoiceTableClientProps {
   initialInvoices: Invoice[];
@@ -43,8 +46,9 @@ const CustomBadge = ({ color, children, ...props }: { color: string, children: R
 }
 
 
-export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps) {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+export function InvoiceTableClient({ initialInvoices: defaultInvoices }: InvoiceTableClientProps) {
+  const [allInvoices, setAllInvoices] = useState<Invoice[]>([]);
+  const [visibleInvoices, setVisibleInvoices] = useState<Invoice[]>([]);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [userService, setUserService] = useState<UserRole | null>(null);
@@ -52,33 +56,43 @@ export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps)
   useEffect(() => {
     const service = localStorage.getItem("user_service") as UserRole | null;
     setUserService(service);
+
+    const storedInvoices = localStorage.getItem(INVOICES_STORAGE_KEY);
+    if (storedInvoices) {
+        setAllInvoices(JSON.parse(storedInvoices));
+    } else {
+        setAllInvoices(defaultInvoices);
+        localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(defaultInvoices));
+    }
   }, []);
+
+  const updateAllInvoices = (updatedInvoices: Invoice[]) => {
+    setAllInvoices(updatedInvoices);
+    localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(updatedInvoices));
+  };
+
 
   useEffect(() => {
     if (userService) {
-      const filteredInvoices = initialInvoices.filter(inv => {
-        // Exclude finalized invoices from dashboard
+      const filteredInvoices = allInvoices.filter(inv => {
         if (inv.status === 'Mandatée' || inv.status === 'Rejetée') {
             return false;
         }
 
         switch (userService) {
             case 'SGFINANCES':
-                // Finances sees all pending invoices except rejected ones handled in history
-                 return inv.status === 'En attente de validation Commande Publique' ||
+                return inv.status === 'En attente de validation Commande Publique' ||
                        inv.status === 'En attente de validation Service' ||
                        inv.status === 'En attente de mandatement';
             case 'SGCOMPUB':
-                // Commande Publique only sees invoices awaiting their validation
                 return inv.status === 'En attente de validation Commande Publique';
             default:
-                // Other services only see invoices awaiting their specific validation
                 return inv.service === userService && inv.status === 'En attente de validation Service';
         }
       });
-      setInvoices(filteredInvoices);
+      setVisibleInvoices(filteredInvoices);
     }
-  }, [userService, initialInvoices]);
+  }, [userService, allInvoices]);
 
   const handleViewComments = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
@@ -89,10 +103,33 @@ export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps)
     setIsDrawerOpen(false);
     setSelectedInvoice(null);
   };
-  
+
+  const handleUpdateInvoice = (invoiceId: string, updates: Partial<Invoice>) => {
+    const updatedInvoices = allInvoices.map(inv => 
+        inv.id === invoiceId ? { ...inv, ...updates, lastUpdated: new Date().toISOString() } : inv
+    );
+    updateAllInvoices(updatedInvoices);
+  };
+
   const handleAction = (invoiceId: string, action: "approve" | "reject") => {
-    console.log(`Invoice ${invoiceId} action: ${action}`);
-    setInvoices(currentInvoices => currentInvoices.filter(inv => inv.id !== invoiceId));
+    const invoice = allInvoices.find(inv => inv.id === invoiceId);
+    if (!invoice || !userService) return;
+
+    let nextStatus: InvoiceStatus | null = null;
+    let historyEntryBy = userService;
+
+    if (action === "approve") {
+        if (invoice.status === 'En attente de validation Commande Publique') nextStatus = 'En attente de validation Service';
+        else if (invoice.status === 'En attente de validation Service') nextStatus = 'En attente de mandatement';
+        else if (invoice.status === 'En attente de mandatement') nextStatus = 'Mandatée';
+    } else {
+        nextStatus = 'Rejetée';
+    }
+
+    if (nextStatus) {
+      const newHistoryEntry = { status: nextStatus, date: new Date().toISOString(), by: historyEntryBy };
+      handleUpdateInvoice(invoiceId, { status: nextStatus, history: [...invoice.history, newHistoryEntry] });
+    }
   };
 
 
@@ -119,7 +156,7 @@ export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps)
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.map((invoice) => {
+              {visibleInvoices.map((invoice) => {
                 const config = statusConfig[invoice.status];
                 const canValidate = 
                     (userService === 'SGCOMPUB' && invoice.status === 'En attente de validation Commande Publique') ||
@@ -211,6 +248,8 @@ export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps)
         isOpen={isDrawerOpen}
         onClose={handleCloseDrawer}
         invoice={selectedInvoice}
+        onCommentSubmit={(invoiceId, newComments) => handleUpdateInvoice(invoiceId, { comments: newComments })}
+        userService={userService}
       />
     </>
   );

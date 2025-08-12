@@ -1,12 +1,13 @@
+
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Invoice, Comment } from "@/lib/types";
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import type { Invoice, Comment, UserRole } from "@/lib/types";
+import { Avatar, AvatarFallback } from '../ui/avatar';
 import { CircleUser } from 'lucide-react';
 import { Separator } from '../ui/separator';
 
@@ -14,30 +15,34 @@ interface CommentsDrawerProps {
   invoice: Invoice | null;
   isOpen: boolean;
   onClose: () => void;
+  onCommentSubmit: (invoiceId: string, comments: Comment[]) => void;
+  userService: UserRole | null;
 }
 
-export function CommentsDrawer({ invoice, isOpen, onClose }: CommentsDrawerProps) {
-  const [comments, setComments] = useState<Comment[]>(invoice?.comments || []);
+export function CommentsDrawer({ invoice, isOpen, onClose, onCommentSubmit, userService }: CommentsDrawerProps) {
+  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (invoice) {
       setComments(invoice.comments);
     }
   }, [invoice]);
 
   const handlePostComment = () => {
-    if (newComment.trim() === "" || !invoice) return;
+    if (newComment.trim() === "" || !invoice || !userService) return;
 
     const comment: Comment = {
-      id: `c${comments.length + 1}`,
-      author: 'Solange (Finance)',
-      authorRole: 'Finance',
+      id: `c${new Date().getTime()}`,
+      author: `${userService}`,
+      authorRole: userService,
       timestamp: new Date().toISOString(),
       content: newComment,
     };
 
-    setComments([...comments, comment]);
+    const updatedComments = [...comments, comment];
+    setComments(updatedComments);
+    onCommentSubmit(invoice.id, updatedComments);
     setNewComment("");
   };
   
