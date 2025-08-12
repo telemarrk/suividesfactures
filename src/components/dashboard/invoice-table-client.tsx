@@ -57,11 +57,24 @@ export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps)
   useEffect(() => {
     if (userService) {
       const filteredInvoices = initialInvoices.filter(inv => {
-        const isPending = inv.status !== 'Mandatée' && inv.status !== 'Rejetée';
-        if (userService === 'SGFINANCES' || userService === 'SGCOMPUB') {
-          return isPending;
+        // Exclude finalized invoices from dashboard
+        if (inv.status === 'Mandatée' || inv.status === 'Rejetée') {
+            return false;
         }
-        return inv.service === userService && isPending;
+
+        switch (userService) {
+            case 'SGFINANCES':
+                // Finances sees all pending invoices except rejected ones handled in history
+                 return inv.status === 'En attente de validation Commande Publique' ||
+                       inv.status === 'En attente de validation Service' ||
+                       inv.status === 'En attente de mandatement';
+            case 'SGCOMPUB':
+                // Commande Publique only sees invoices awaiting their validation
+                return inv.status === 'En attente de validation Commande Publique';
+            default:
+                // Other services only see invoices awaiting their specific validation
+                return inv.service === userService && inv.status === 'En attente de validation Service';
+        }
       });
       setInvoices(filteredInvoices);
     }
@@ -108,6 +121,11 @@ export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps)
             <TableBody>
               {invoices.map((invoice) => {
                 const config = statusConfig[invoice.status];
+                const canValidate = 
+                    (userService === 'SGCOMPUB' && invoice.status === 'En attente de validation Commande Publique') ||
+                    (userService === invoice.service && invoice.status === 'En attente de validation Service') ||
+                    (userService === 'SGFINANCES' && invoice.status === 'En attente de mandatement');
+
                 return (
                   <TableRow key={invoice.id}>
                     <TableCell className="hidden sm:table-cell">
@@ -159,7 +177,7 @@ export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps)
                           </Tooltip>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                               <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => handleAction(invoice.id, 'approve')}>
+                               <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => handleAction(invoice.id, 'approve')} disabled={!canValidate}>
                                 <CheckCircle2 className="h-4 w-4" />
                                 <span className="sr-only">Approuver</span>
                               </Button>
@@ -170,7 +188,7 @@ export function InvoiceTableClient({ initialInvoices }: InvoiceTableClientProps)
                           </Tooltip>
                           <Tooltip>
                              <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleAction(invoice.id, 'reject')}>
+                              <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleAction(invoice.id, 'reject')} disabled={!canValidate}>
                                 <XCircle className="h-4 w-4" />
                                 <span className="sr-only">Rejeter</span>
                               </Button>
