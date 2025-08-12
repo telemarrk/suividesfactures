@@ -2,12 +2,20 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { Invoice } from '@/lib/types';
+import { Invoice, ExpenseType } from '@/lib/types';
 import { invoices as defaultInvoices } from '@/lib/data';
 
 // IMPORTANT: This is a local development-only feature.
 // For a production app, invoices should be stored securely in cloud storage.
 const INVOICES_DIR = 'C:/Users/solan/Desktop/Factures/PDF';
+
+const getExpenseType = (fileName: string): ExpenseType => {
+    const lowerCaseName = fileName.toLowerCase();
+    if (lowerCaseName.includes('-i-')) return "Investissement";
+    if (lowerCaseName.includes('-f-')) return "Fonctionnement";
+    if (lowerCaseName.includes('-fl-')) return "Fluide";
+    return "N/A";
+}
 
 export async function GET() {
   try {
@@ -29,6 +37,7 @@ export async function GET() {
             lastUpdated: new Date().toISOString(),
             history: [{ status: 'En attente de validation Commande Publique', date: new Date().toISOString(), by: 'System' }],
             comments: [],
+            expenseType: getExpenseType(file),
         };
     });
 

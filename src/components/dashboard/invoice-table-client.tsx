@@ -122,8 +122,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                        inv.status === 'En attente de validation Service' ||
                        inv.status === 'En attente de mandatement';
             case 'SGCOMPUB':
-                 return inv.status === 'En attente de validation Commande Publique' || 
-                       (inv.service === 'SGCOMPUB' && inv.status === 'En attente de validation Service');
+                 return inv.status === 'En attente de validation Commande Publique';
             default:
                 return inv.service === userService && inv.status === 'En attente de validation Service';
         }
@@ -192,6 +191,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                 </TableHead>
                 <TableHead>Nom du fichier</TableHead>
                 <TableHead>Service</TableHead>
+                <TableHead>Type de dépense</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -199,12 +199,12 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12">Chargement des factures...</TableCell>
+                  <TableCell colSpan={6} className="text-center py-12">Chargement des factures...</TableCell>
                 </TableRow>
               ) : visibleInvoices.length > 0 ? (
                 visibleInvoices.map((invoice) => {
                   const config = statusConfig[invoice.status];
-                  const canValidate = 
+                   const canValidate = 
                       (userService === 'SGCOMPUB' && invoice.status === 'En attente de validation Commande Publique') ||
                       (userService === 'SGFINANCES' && invoice.status === 'En attente de mandatement') ||
                       (userService === invoice.service && invoice.status === 'En attente de validation Service');
@@ -219,6 +219,9 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                       <TableCell className="font-medium">{invoice.fileName}</TableCell>
                       <TableCell>
                         <Badge variant="outline">{invoice.service}</Badge>
+                      </TableCell>
+                       <TableCell>
+                        {invoice.expenseType !== "N/A" ? <Badge variant="secondary">{invoice.expenseType}</Badge> : '-'}
                       </TableCell>
                       <TableCell>
                          <CustomBadge color={config.color}>
@@ -290,7 +293,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                 })
               ) : (
                  <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12">Aucune facture en attente pour votre service.</TableCell>
+                  <TableCell colSpan={6} className="text-center py-12">Aucune facture en attente pour votre service.</TableCell>
                 </TableRow>
               )}
             </TableBody>

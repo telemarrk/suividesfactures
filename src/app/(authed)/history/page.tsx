@@ -56,17 +56,20 @@ export default function HistoryPage() {
                            <Table className="w-full">
                               <TableBody>
                                 <TableRow className="border-b-0">
-                                  <TableCell className="font-medium w-2/5">{invoice.fileName}</TableCell>
-                                  <TableCell className="w-1/5">
+                                  <TableCell className="font-medium w-1/3">{invoice.fileName}</TableCell>
+                                  <TableCell className="w-1/6">
                                     <Badge variant="outline">{invoice.service}</Badge>
                                   </TableCell>
-                                  <TableCell className="w-1/5">
+                                   <TableCell className="w-1/6">
+                                    {invoice.expenseType !== "N/A" ? <Badge variant="secondary">{invoice.expenseType}</Badge> : '-'}
+                                  </TableCell>
+                                  <TableCell className="w-1/6">
                                       <Badge variant={invoice.status === "Mandatée" ? "default" : "destructive"} className={invoice.status === "Mandatée" ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700" : ""}>
                                       {invoice.status === "Mandatée" ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <XCircle className="mr-2 h-4 w-4" />}
                                       {invoice.status}
                                       </Badge>
                                   </TableCell>
-                                  <TableCell className="text-right w-1/5">
+                                  <TableCell className="text-right w-1/6">
                                     <div className="flex items-center justify-end gap-2">
                                       <span>{new Date(invoice.lastUpdated).toLocaleDateString()}</span>
                                       <TooltipProvider>

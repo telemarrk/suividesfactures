@@ -15,6 +15,8 @@ export type InvoiceStatus =
   | "Mandatée"
   | "Rejetée";
 
+export type ExpenseType = "Investissement" | "Fonctionnement" | "Fluide" | "N/A";
+
 export interface Comment {
   id: string;
   author: string;
@@ -31,6 +33,7 @@ export interface Invoice {
   lastUpdated: string;
   history: { status: InvoiceStatus; date: string; by: string }[];
   comments: Comment[];
+  expenseType: ExpenseType;
 }
 
 export interface Service {

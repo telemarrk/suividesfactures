@@ -37,7 +37,7 @@ export const services: Service[] = [
 export const invoices: Invoice[] = [
   {
     id: "INV001",
-    fileName: "SGRH-facture-fournisseur-A.pdf",
+    fileName: "SGRH-facture-fournisseur-f-.pdf",
     service: "SGRH",
     status: "En attente de validation Service",
     lastUpdated: "2024-07-22T14:30:00Z",
@@ -48,10 +48,11 @@ export const invoices: Invoice[] = [
     comments: [
       { id: 'c1', author: 'Alice (Commande Publique)', authorRole: 'Commande Publique', timestamp: '2024-07-22T14:29:00Z', content: 'Vérifié, conforme.' },
     ],
+    expenseType: "Fonctionnement",
   },
   {
     id: "INV002",
-    fileName: "SGFINANCES-note-de-frais-B.pdf",
+    fileName: "SGFINANCES-note-de-frais-f-.pdf",
     service: "SGFINANCES",
     status: "En attente de mandatement",
     lastUpdated: "2024-07-21T11:00:00Z",
@@ -63,10 +64,11 @@ export const invoices: Invoice[] = [
     comments: [
         { id: 'c1', author: 'Bob (SGFINANCES)', authorRole: 'SGFINANCES', timestamp: '2024-07-21T10:59:00Z', content: 'Validé pour le service. Prêt pour mandatement.' },
     ],
+    expenseType: "Fonctionnement",
   },
   {
     id: "INV003",
-    fileName: "SGCOMPUB-facture-logiciel-C.pdf",
+    fileName: "SGCOMPUB-facture-logiciel-fl-.pdf",
     service: "SGCOMPUB",
     status: "En attente de validation Commande Publique",
     lastUpdated: "2024-07-22T10:15:00Z",
@@ -74,10 +76,11 @@ export const invoices: Invoice[] = [
        { status: "En attente de validation Commande Publique", date: "2024-07-22T10:15:00Z", by: "Finance" }
     ],
     comments: [],
+    expenseType: "Fluide",
   },
   {
     id: "INV004",
-    fileName: "SGCULTURE-prestation-artiste-D.pdf",
+    fileName: "SGCULTURE-prestation-artiste-i-.pdf",
     service: "SGCULTURE",
     status: "Mandatée",
     lastUpdated: "2024-07-19T17:00:00Z",
@@ -91,10 +94,11 @@ export const invoices: Invoice[] = [
         { id: 'c1', author: 'Charles (SGCULTURE)', authorRole: 'SGCULTURE', timestamp: '2024-07-19T09:29:00Z', content: 'RAS' },
         { id: 'c2', author: 'Diane (Finance)', authorRole: 'Finance', timestamp: '2024-07-19T16:59:00Z', content: 'Mandatement effectué.' },
     ],
+    expenseType: "Investissement",
   },
   {
     id: "INV005",
-    fileName: "SGINFORMAT-achat-materiel-E.pdf",
+    fileName: "SGINFORMAT-achat-materiel-i-.pdf",
     service: "SGINFORMAT",
     status: "Rejetée",
     lastUpdated: "2024-07-20T18:00:00Z",
@@ -105,5 +109,6 @@ export const invoices: Invoice[] = [
     comments: [
         { id: 'c1', author: 'Alice (Commande Publique)', authorRole: 'Commande Publique', timestamp: '2024-07-20T17:59:00Z', content: 'Manque le bon de commande. Facture rejetée.' },
     ],
+    expenseType: "Investissement",
   },
 ];
