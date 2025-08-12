@@ -1,6 +1,6 @@
 
 
-import { InvoiceTableClient } from "@/components/dashboard/invoice-table-client";
+import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { invoices } from "@/lib/data";
 
 export default function Dashboard() {
@@ -9,7 +9,7 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-bold tracking-tight">Tableau de bord</h1>
-      <InvoiceTableClient initialInvoices={invoices} />
+      <DashboardClient initialInvoices={invoices} />
     </div>
   );
 }
