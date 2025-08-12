@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import {
   Avatar,
@@ -15,8 +16,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CircleUser, LogOut, Settings } from "lucide-react";
+import { useEffect, useState } from "react";
+import { UserRole } from "@/lib/types";
 
 export function UserNav() {
+  const [userService, setUserService] = useState<UserRole | null>(null);
+
+  useEffect(() => {
+    const service = localStorage.getItem("user_service") as UserRole | null;
+    setUserService(service);
+  }, []);
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -32,19 +42,9 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Solange</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              solange.finances@example.com
-            </p>
+            <p className="text-sm font-medium leading-none">{userService || "Utilisateur"}</p>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Paramètres</span>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
            <Link href="/login">
