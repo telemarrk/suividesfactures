@@ -55,7 +55,7 @@ export default function HistoryPage() {
                                     <Badge variant="outline">{invoice.service}</Badge>
                                   </TableCell>
                                   <TableCell className="w-1/5">
-                                      <Badge variant={invoice.status === "Mandatée" ? "default" : "destructive"} className={invoice.status === "Mandatée" ? "bg-accent text-accent-foreground" : ""}>
+                                      <Badge variant={invoice.status === "Mandatée" ? "default" : "destructive"} className={invoice.status === "Mandatée" ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700" : ""}>
                                       {invoice.status === "Mandatée" ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <XCircle className="mr-2 h-4 w-4" />}
                                       {invoice.status}
                                       </Badge>
