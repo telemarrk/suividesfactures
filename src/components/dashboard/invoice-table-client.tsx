@@ -122,17 +122,13 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                        inv.status === 'En attente de validation Service' ||
                        inv.status === 'En attente de mandatement';
             case 'SGCOMPUB':
-                return inv.status === 'En attente de validation Commande Publique' || 
+                 return inv.status === 'En attente de validation Commande Publique' || 
                        (inv.service === 'SGCOMPUB' && inv.status === 'En attente de validation Service');
             default:
                 return inv.service === userService && inv.status === 'En attente de validation Service';
         }
       });
-       if (userService === 'SGFINANCES') {
-         setVisibleInvoices(filteredInvoices);
-       } else {
-        setVisibleInvoices(filteredInvoices.filter(inv => inv.status !== 'Rejetée'));
-      }
+      setVisibleInvoices(filteredInvoices);
     }
   }, [userService, allInvoices]);
 
@@ -210,8 +206,8 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                   const config = statusConfig[invoice.status];
                   const canValidate = 
                       (userService === 'SGCOMPUB' && invoice.status === 'En attente de validation Commande Publique') ||
-                      (userService === invoice.service && invoice.status === 'En attente de validation Service') ||
-                      (userService === 'SGFINANCES' && invoice.status === 'En attente de mandatement');
+                      (userService === 'SGFINANCES' && invoice.status === 'En attente de mandatement') ||
+                      (userService === invoice.service && invoice.status === 'En attente de validation Service');
                   
                   const isFinanceOrCompubService = (invoice.service === 'SGFINANCES' || invoice.service === 'SGCOMPUB');
 
