@@ -58,17 +58,32 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
     setUserService(service);
 
     const storedInvoices = localStorage.getItem(INVOICES_STORAGE_KEY);
-    if (storedInvoices) {
-        setAllInvoices(JSON.parse(storedInvoices));
-    } else {
-        setAllInvoices(defaultInvoices);
+    const invoicesToUse = storedInvoices ? JSON.parse(storedInvoices) : defaultInvoices;
+    setAllInvoices(invoicesToUse);
+
+    if (!storedInvoices) {
         localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(defaultInvoices));
     }
+
+    const handleStorageChange = () => {
+        const updatedStoredInvoices = localStorage.getItem(INVOICES_STORAGE_KEY);
+        if (updatedStoredInvoices) {
+            setAllInvoices(JSON.parse(updatedStoredInvoices));
+        }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const updateAllInvoices = (updatedInvoices: Invoice[]) => {
     setAllInvoices(updatedInvoices);
     localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(updatedInvoices));
+    // Manually dispatch a storage event to sync tabs
+    window.dispatchEvent(new Event('storage'));
   };
 
 
@@ -85,7 +100,8 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                        inv.status === 'En attente de validation Service' ||
                        inv.status === 'En attente de mandatement';
             case 'SGCOMPUB':
-                return inv.status === 'En attente de validation Commande Publique';
+                return inv.status === 'En attente de validation Commande Publique' || 
+                       (inv.service === 'SGCOMPUB' && inv.status === 'En attente de validation Service');
             default:
                 return inv.service === userService && inv.status === 'En attente de validation Service';
         }
