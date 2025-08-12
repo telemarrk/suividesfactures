@@ -32,7 +32,7 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="User avatar" />
+            <AvatarImage src="https://placehold.co/32x32.png" alt="User avatar" data-ai-hint="user profile" />
             <AvatarFallback>
               <CircleUser />
             </AvatarFallback>
