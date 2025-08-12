@@ -44,6 +44,7 @@ export function CommentsDrawer({ invoice, isOpen, onClose, onCommentSubmit, user
     setComments(updatedComments);
     onCommentSubmit(invoice.id, updatedComments);
     setNewComment("");
+    onClose(); // Ferme automatiquement la fenêtre
   };
   
   if (!invoice) return null;
