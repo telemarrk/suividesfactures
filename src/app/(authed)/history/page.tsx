@@ -5,13 +5,15 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { invoices as defaultInvoices } from "@/lib/data"
-import { CheckCircle2, XCircle, MessageSquare, ChevronDown } from "lucide-react"
+import { CheckCircle2, XCircle, MessageSquare, Eye } from "lucide-react"
 import { useEffect, useState } from "react"
 import type { Invoice } from "@/lib/types"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CircleUser } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const INVOICES_STORAGE_KEY = "app_invoices";
 
@@ -30,6 +32,10 @@ export default function HistoryPage() {
   const completedInvoices = allInvoices.filter(
     (invoice) => invoice.status === "Mandatée" || invoice.status === "Rejetée"
   );
+
+  const handleViewPdf = (fileName: string) => {
+    window.open(`/api/invoices/${encodeURIComponent(fileName)}`, '_blank');
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -61,7 +67,22 @@ export default function HistoryPage() {
                                       </Badge>
                                   </TableCell>
                                   <TableCell className="text-right w-1/5">
-                                      {new Date(invoice.lastUpdated).toLocaleDateString()}
+                                    <div className="flex items-center justify-end gap-2">
+                                      <span>{new Date(invoice.lastUpdated).toLocaleDateString()}</span>
+                                      <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                               <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleViewPdf(invoice.fileName); }}>
+                                                <Eye className="h-4 w-4" />
+                                                <span className="sr-only">Ouvrir le PDF</span>
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Ouvrir le PDF</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                      </TooltipProvider>
+                                    </div>
                                   </TableCell>
                                 </TableRow>
                               </TableBody>
@@ -106,9 +127,9 @@ export default function HistoryPage() {
                                         </div>
                                     </div>
                                     ))
-                                ) : (
+                                  ) : (
                                     <p className="text-sm text-muted-foreground text-center py-4">Aucun commentaire.</p>
-                                )}
+                                  )}
                                 </div>
                             </div>
                           </div>
