@@ -52,18 +52,42 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [userService, setUserService] = useState<UserRole | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchInvoices = async () => {
+    setIsLoading(true);
+    try {
+        const response = await fetch('/api/invoices');
+        if (!response.ok) {
+            throw new Error('Failed to fetch invoices');
+        }
+        const localInvoices = await response.json();
+        
+        const storedInvoicesRaw = localStorage.getItem(INVOICES_STORAGE_KEY);
+        const storedInvoices = storedInvoicesRaw ? JSON.parse(storedInvoicesRaw) : [];
+
+        const mergedInvoices = localInvoices.map((localInv: Invoice) => {
+            const stored = storedInvoices.find((s: Invoice) => s.fileName === localInv.fileName);
+            if (stored) {
+                return { ...localInv, ...stored, id: localInv.id }; // Keep local ID but take stored status/comments
+            }
+            return localInv;
+        });
+
+        updateAllInvoices(mergedInvoices);
+        
+    } catch (error) {
+        console.error("Error fetching local invoices, falling back to storage or default:", error);
+        const storedInvoices = localStorage.getItem(INVOICES_STORAGE_KEY);
+        setAllInvoices(storedInvoices ? JSON.parse(storedInvoices) : defaultInvoices);
+    }
+    setIsLoading(false);
+  };
 
   useEffect(() => {
     const service = localStorage.getItem("user_service") as UserRole | null;
     setUserService(service);
-
-    const storedInvoices = localStorage.getItem(INVOICES_STORAGE_KEY);
-    const invoicesToUse = storedInvoices ? JSON.parse(storedInvoices) : defaultInvoices;
-    setAllInvoices(invoicesToUse);
-
-    if (!storedInvoices) {
-        localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(defaultInvoices));
-    }
+    fetchInvoices();
 
     const handleStorageChange = () => {
         const updatedStoredInvoices = localStorage.getItem(INVOICES_STORAGE_KEY);
@@ -82,10 +106,8 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
   const updateAllInvoices = (updatedInvoices: Invoice[]) => {
     setAllInvoices(updatedInvoices);
     localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(updatedInvoices));
-    // Manually dispatch a storage event to sync tabs
     window.dispatchEvent(new Event('storage'));
   };
-
 
   useEffect(() => {
     if (userService) {
@@ -106,7 +128,11 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                 return inv.service === userService && inv.status === 'En attente de validation Service';
         }
       });
-      setVisibleInvoices(filteredInvoices);
+       if (userService === 'SGFINANCES') {
+         setVisibleInvoices(filteredInvoices);
+       } else {
+        setVisibleInvoices(filteredInvoices.filter(inv => inv.status !== 'Rejetée'));
+      }
     }
   }, [userService, allInvoices]);
 
@@ -148,6 +174,9 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
     }
   };
 
+  const handleViewPdf = (fileName: string) => {
+    window.open(`/api/invoices/${encodeURIComponent(fileName)}`, '_blank');
+  }
 
   return (
     <>
@@ -172,90 +201,102 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
               </TableRow>
             </TableHeader>
             <TableBody>
-              {visibleInvoices.map((invoice) => {
-                const config = statusConfig[invoice.status];
-                const canValidate = 
-                    (userService === 'SGCOMPUB' && invoice.status === 'En attente de validation Commande Publique') ||
-                    (userService === invoice.service && invoice.status === 'En attente de validation Service') ||
-                    (userService === 'SGFINANCES' && invoice.status === 'En attente de mandatement');
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-12">Chargement des factures...</TableCell>
+                </TableRow>
+              ) : visibleInvoices.length > 0 ? (
+                visibleInvoices.map((invoice) => {
+                  const config = statusConfig[invoice.status];
+                  const canValidate = 
+                      (userService === 'SGCOMPUB' && invoice.status === 'En attente de validation Commande Publique') ||
+                      (userService === invoice.service && invoice.status === 'En attente de validation Service') ||
+                      (userService === 'SGFINANCES' && invoice.status === 'En attente de mandatement');
+                  
+                  const isFinanceOrCompubService = (invoice.service === 'SGFINANCES' || invoice.service === 'SGCOMPUB');
 
-                return (
-                  <TableRow key={invoice.id}>
-                    <TableCell className="hidden sm:table-cell">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                    </TableCell>
-                    <TableCell className="font-medium">{invoice.fileName}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{invoice.service}</Badge>
-                    </TableCell>
-                    <TableCell>
-                       <CustomBadge color={config.color}>
-                          <div className="flex items-center gap-2">
-                             <config.icon className="h-3.5 w-3.5" />
-                            <span>{config.label}</span>
-                          </div>
-                       </CustomBadge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                       <TooltipProvider>
-                        <div className="flex items-center justify-end gap-2">
-                           <Tooltip>
-                            <TooltipTrigger asChild>
-                               <Button variant="ghost" size="icon" onClick={() => alert('Ouverture du PDF non implémentée.')}>
-                                <Eye className="h-4 w-4" />
-                                <span className="sr-only">Ouvrir le PDF</span>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Ouvrir le PDF</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="relative">
-                                <Button variant="ghost" size="icon" onClick={() => handleViewComments(invoice)}>
-                                  <MessageSquare className="h-4 w-4" />
-                                  <span className="sr-only">Voir les commentaires</span>
+                  return (
+                    <TableRow key={invoice.id}>
+                      <TableCell className="hidden sm:table-cell">
+                        <FileText className="h-5 w-5 text-muted-foreground" />
+                      </TableCell>
+                      <TableCell className="font-medium">{invoice.fileName}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{invoice.service}</Badge>
+                      </TableCell>
+                      <TableCell>
+                         <CustomBadge color={config.color}>
+                            <div className="flex items-center gap-2">
+                               <config.icon className="h-3.5 w-3.5" />
+                              <span>{config.label}</span>
+                            </div>
+                         </CustomBadge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                         <TooltipProvider>
+                          <div className="flex items-center justify-end gap-2">
+                             <Tooltip>
+                              <TooltipTrigger asChild>
+                                 <Button variant="ghost" size="icon" onClick={() => handleViewPdf(invoice.fileName)}>
+                                  <Eye className="h-4 w-4" />
+                                  <span className="sr-only">Ouvrir le PDF</span>
                                 </Button>
-                                {invoice.comments.length > 0 && (
-                                  <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 justify-center p-1 text-xs">
-                                    {invoice.comments.length}
-                                  </Badge>
-                                )}
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Voir les commentaires</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                               <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => handleAction(invoice.id, 'approve')} disabled={!canValidate}>
-                                <CheckCircle2 className="h-4 w-4" />
-                                <span className="sr-only">Approuver</span>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Approuver</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                             <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleAction(invoice.id, 'reject')} disabled={!canValidate}>
-                                <XCircle className="h-4 w-4" />
-                                <span className="sr-only">Rejeter</span>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Rejeter</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
-                      </TooltipProvider>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Ouvrir le PDF</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="relative">
+                                  <Button variant="ghost" size="icon" onClick={() => handleViewComments(invoice)}>
+                                    <MessageSquare className="h-4 w-4" />
+                                    <span className="sr-only">Voir les commentaires</span>
+                                  </Button>
+                                  {invoice.comments.length > 0 && (
+                                    <Badge className="absolute -top-1 -right-1 h-4 w-4 justify-center p-1 text-xs" variant="destructive">
+                                      {invoice.comments.length}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Voir les commentaires</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                 <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => handleAction(invoice.id, 'approve')} disabled={!canValidate}>
+                                  <CheckCircle2 className="h-4 w-4" />
+                                  <span className="sr-only">Approuver</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Approuver</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                               <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleAction(invoice.id, 'reject')} disabled={!canValidate}>
+                                  <XCircle className="h-4 w-4" />
+                                  <span className="sr-only">Rejeter</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Rejeter</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TooltipProvider>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                 <TableRow>
+                  <TableCell colSpan={5} className="text-center py-12">Aucune facture en attente pour votre service.</TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>

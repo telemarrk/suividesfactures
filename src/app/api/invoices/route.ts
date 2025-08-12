@@ -1,0 +1,41 @@
+
+import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
+import { Invoice } from '@/lib/types';
+import { invoices as defaultInvoices } from '@/lib/data';
+
+// IMPORTANT: This is a local development-only feature.
+// For a production app, invoices should be stored securely in cloud storage.
+const INVOICES_DIR = 'C:/Users/solan/Desktop/Factures/PDF';
+
+export async function GET() {
+  try {
+    if (!fs.existsSync(INVOICES_DIR)) {
+      console.warn(`Le dossier des factures n'existe pas : ${INVOICES_DIR}. Utilisation des données par défaut.`);
+      return NextResponse.json(defaultInvoices);
+    }
+    
+    const files = fs.readdirSync(INVOICES_DIR).filter(file => path.extname(file).toLowerCase() === '.pdf');
+
+    // This is a simplified logic. In a real app, you would get this from a database.
+    const newInvoices: Invoice[] = files.map((file, index) => {
+        const serviceName = file.split('-')[0].toUpperCase();
+        return {
+            id: `INV-LOCAL-${index + 1}`,
+            fileName: file,
+            service: serviceName as any, // This is an assumption based on file naming.
+            status: 'En attente de validation Commande Publique',
+            lastUpdated: new Date().toISOString(),
+            history: [{ status: 'En attente de validation Commande Publique', date: new Date().toISOString(), by: 'System' }],
+            comments: [],
+        };
+    });
+
+    return NextResponse.json(newInvoices);
+  } catch (error) {
+    console.error("Erreur lors de la lecture du dossier des factures:", error);
+    // Fallback to default data in case of any error
+    return NextResponse.json(defaultInvoices, { status: 500 });
+  }
+}
