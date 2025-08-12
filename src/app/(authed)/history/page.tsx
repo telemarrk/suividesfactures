@@ -5,9 +5,13 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { invoices as defaultInvoices } from "@/lib/data"
-import { CheckCircle2, XCircle } from "lucide-react"
+import { CheckCircle2, XCircle, MessageSquare, ChevronDown } from "lucide-react"
 import { useEffect, useState } from "react"
 import type { Invoice } from "@/lib/types"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { CircleUser } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 const INVOICES_STORAGE_KEY = "app_invoices";
 
@@ -38,35 +42,86 @@ export default function HistoryPage() {
             </CardDescription>
             </CardHeader>
             <CardContent>
-            <Table>
-                <TableHeader>
-                <TableRow>
-                    <TableHead>Nom du fichier</TableHead>
-                    <TableHead>Service</TableHead>
-                    <TableHead>Statut Final</TableHead>
-                    <TableHead className="text-right">Date de finalisation</TableHead>
-                </TableRow>
-                </TableHeader>
-                <TableBody>
+              <Accordion type="single" collapsible className="w-full">
                 {completedInvoices.map((invoice) => (
-                    <TableRow key={invoice.id}>
-                    <TableCell className="font-medium">{invoice.fileName}</TableCell>
-                    <TableCell>
-                        <Badge variant="outline">{invoice.service}</Badge>
-                    </TableCell>
-                    <TableCell>
-                        <Badge variant={invoice.status === "Mandatée" ? "default" : "destructive"} className={invoice.status === "Mandatée" ? "bg-accent text-accent-foreground" : ""}>
-                         {invoice.status === "Mandatée" ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <XCircle className="mr-2 h-4 w-4" />}
-                        {invoice.status}
-                        </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                        {new Date(invoice.lastUpdated).toLocaleDateString()}
-                    </TableCell>
-                    </TableRow>
+                   <AccordionItem value={invoice.id} key={invoice.id}>
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="w-full">
+                           <Table className="w-full">
+                              <TableBody>
+                                <TableRow className="border-b-0">
+                                  <TableCell className="font-medium w-2/5">{invoice.fileName}</TableCell>
+                                  <TableCell className="w-1/5">
+                                    <Badge variant="outline">{invoice.service}</Badge>
+                                  </TableCell>
+                                  <TableCell className="w-1/5">
+                                      <Badge variant={invoice.status === "Mandatée" ? "default" : "destructive"} className={invoice.status === "Mandatée" ? "bg-accent text-accent-foreground" : ""}>
+                                      {invoice.status === "Mandatée" ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <XCircle className="mr-2 h-4 w-4" />}
+                                      {invoice.status}
+                                      </Badge>
+                                  </TableCell>
+                                  <TableCell className="text-right w-1/5">
+                                      {new Date(invoice.lastUpdated).toLocaleDateString()}
+                                  </TableCell>
+                                </TableRow>
+                              </TableBody>
+                            </Table>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="p-4 bg-muted/50 rounded-md">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                              <h4 className="font-semibold mb-2">Historique de validation</h4>
+                              <ul className="space-y-2 text-sm">
+                                {invoice.history.map((h, index) => (
+                                  <li key={index} className="flex items-center gap-2">
+                                     <Badge variant="secondary">{h.status}</Badge>
+                                     <span>par <strong>{h.by}</strong> le {new Date(h.date).toLocaleDateString()}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                            <div>
+                               <h4 className="font-semibold mb-2 flex items-center">
+                                  <MessageSquare className="mr-2 h-5 w-5"/>
+                                  Commentaires ({invoice.comments.length})
+                                </h4>
+                               <Separator className="my-2" />
+                                <div className="space-y-4 max-h-48 overflow-y-auto pr-2">
+                                  {invoice.comments.length > 0 ? (
+                                    invoice.comments.map((comment) => (
+                                    <div key={comment.id} className="flex gap-3">
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarFallback><CircleUser className="h-4 w-4"/></AvatarFallback>
+                                        </Avatar>
+                                        <div className="grid gap-1">
+                                            <div className="flex items-center gap-2">
+                                                <div className="font-semibold text-sm">{comment.author}</div>
+                                                <div className="text-xs text-muted-foreground">
+                                                    {new Date(comment.timestamp).toLocaleString()}
+                                                </div>
+                                            </div>
+                                            <p className="text-sm leading-snug">{comment.content}</p>
+                                        </div>
+                                    </div>
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-muted-foreground text-center py-4">Aucun commentaire.</p>
+                                )}
+                                </div>
+                            </div>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                   </AccordionItem>
                 ))}
-                </TableBody>
-            </Table>
+              </Accordion>
+               {completedInvoices.length === 0 && (
+                 <div className="text-center text-muted-foreground py-12">
+                    Aucune facture dans l'historique pour le moment.
+                 </div>
+               )}
             </CardContent>
         </Card>
     </div>
