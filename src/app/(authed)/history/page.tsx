@@ -3,53 +3,135 @@
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { invoices as defaultInvoices } from "@/lib/data"
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
+import { invoices as defaultInvoices, services as defaultServices } from "@/lib/data"
 import { CheckCircle2, XCircle, MessageSquare, Eye } from "lucide-react"
-import { useEffect, useState } from "react"
-import type { Invoice } from "@/lib/types"
+import { useEffect, useState, useMemo } from "react"
+import type { Invoice, Service } from "@/lib/types"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CircleUser } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const INVOICES_STORAGE_KEY = "app_invoices";
+const SERVICES_STORAGE_KEY = "app_services";
 
 export default function HistoryPage() {
   const [allInvoices, setAllInvoices] = useState<Invoice[]>([]);
+  const [allServices, setAllServices] = useState<Service[]>([]);
+  const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
+
+  const [serviceFilter, setServiceFilter] = useState<string>("all");
+  const [expenseTypeFilter, setExpenseTypeFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   useEffect(() => {
       const storedInvoices = localStorage.getItem(INVOICES_STORAGE_KEY);
-      if (storedInvoices) {
-          setAllInvoices(JSON.parse(storedInvoices));
-      } else {
-          setAllInvoices(defaultInvoices);
-      }
+      const invoices = storedInvoices ? JSON.parse(storedInvoices) : defaultInvoices;
+      setAllInvoices(invoices);
+
+      const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
+      const services = storedServices ? JSON.parse(storedServices) : defaultServices;
+      setAllServices(services);
   }, []);
 
-  const completedInvoices = allInvoices.filter(
-    (invoice) => invoice.status === "Mandatée" || invoice.status === "Rejetée"
-  );
+  const completedInvoices = useMemo(() => {
+    return allInvoices.filter(
+      (invoice) => invoice.status === "Mandatée" || invoice.status === "Rejetée"
+    );
+  }, [allInvoices]);
+  
+  useEffect(() => {
+    let invoices = completedInvoices;
+    if (serviceFilter !== 'all') {
+        invoices = invoices.filter(invoice => invoice.service === serviceFilter);
+    }
+    if (expenseTypeFilter !== 'all') {
+        invoices = invoices.filter(invoice => invoice.expenseType === expenseTypeFilter);
+    }
+    if (statusFilter !== 'all') {
+        invoices = invoices.filter(invoice => invoice.status === statusFilter);
+    }
+    setFilteredInvoices(invoices);
+  }, [completedInvoices, serviceFilter, expenseTypeFilter, statusFilter]);
+  
 
   const handleViewPdf = (fileName: string) => {
     window.open(`/api/invoices/${encodeURIComponent(fileName)}`, '_blank');
   }
+
+  const handleResetFilters = () => {
+    setServiceFilter("all");
+    setExpenseTypeFilter("all");
+    setStatusFilter("all");
+  };
+
+  const expenseTypes = useMemo(() => {
+     const types = new Set(completedInvoices.map(inv => inv.expenseType));
+     return Array.from(types).filter(t => t !== "N/A");
+  }, [completedInvoices]);
+
+  const statuses = useMemo(() => {
+     const statusSet = new Set(completedInvoices.map(inv => inv.status));
+     return Array.from(statusSet);
+  }, [completedInvoices]);
 
   return (
     <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-bold tracking-tight">Historique des factures</h1>
         <Card>
             <CardHeader>
-            <CardTitle>Factures traitées</CardTitle>
-            <CardDescription>
-                Liste de toutes les factures qui ont terminé le cycle de validation.
-            </CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Factures traitées</CardTitle>
+                  <CardDescription>
+                      Liste de toutes les factures qui ont terminé le cycle de validation.
+                  </CardDescription>
+                </div>
+                 <div className="flex items-center gap-2">
+                    <Select value={serviceFilter} onValueChange={setServiceFilter}>
+                        <SelectTrigger className="w-[200px]">
+                            <SelectValue placeholder="Filtrer par service" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Tous les services</SelectItem>
+                            {allServices.sort((a,b) => a.description.localeCompare(b.description)).map(service => (
+                                <SelectItem key={service.id} value={service.name}>{service.description}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                     <Select value={expenseTypeFilter} onValueChange={setExpenseTypeFilter}>
+                        <SelectTrigger className="w-[200px]">
+                            <SelectValue placeholder="Filtrer par dépense" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Tous types de dépenses</SelectItem>
+                            {expenseTypes.map(type => (
+                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                     <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Filtrer par statut" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Tous les statuts</SelectItem>
+                            {statuses.map(status => (
+                                <SelectItem key={status} value={status}>{status}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Button variant="outline" onClick={handleResetFilters}>Réinitialiser</Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <Accordion type="single" collapsible className="w-full">
-                {completedInvoices.map((invoice) => (
+                {filteredInvoices.map((invoice) => (
                    <AccordionItem value={invoice.id} key={invoice.id}>
                       <AccordionTrigger className="hover:no-underline">
                         <div className="w-full">
@@ -141,9 +223,9 @@ export default function HistoryPage() {
                    </AccordionItem>
                 ))}
               </Accordion>
-               {completedInvoices.length === 0 && (
+               {filteredInvoices.length === 0 && (
                  <div className="text-center text-muted-foreground py-12">
-                    Aucune facture dans l'historique pour le moment.
+                    {completedInvoices.length > 0 ? "Aucune facture ne correspond à vos critères de recherche." : "Aucune facture dans l'historique pour le moment."}
                  </div>
                )}
             </CardContent>
