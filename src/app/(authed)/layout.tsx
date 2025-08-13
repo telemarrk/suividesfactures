@@ -20,8 +20,6 @@ function AuthedLayoutContent({ children }: { children: React.ReactNode }) {
     setUserService(service);
   }, []);
 
-  // Allow all logged-in users to see the history.
-  // The history page itself will filter what they can see.
   const canViewHistory = !!userService; 
   const canViewAdmin = userService === 'SGFINANCES';
 
