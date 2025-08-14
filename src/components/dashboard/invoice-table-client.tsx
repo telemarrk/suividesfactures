@@ -12,6 +12,8 @@ import { CommentsDrawer } from "./comments-drawer";
 import type { Invoice, InvoiceStatus, UserRole, Comment } from "@/lib/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { invoices as defaultInvoices } from "@/lib/data";
+import { differenceInDays } from "date-fns";
+
 
 const INVOICES_STORAGE_KEY = "app_invoices";
 
@@ -44,6 +46,27 @@ const CustomBadge = ({ color, children, ...props }: { color: string, children: R
 
   return <Badge {...props} className={badgeClasses[color] || ''}>{children}</Badge>;
 }
+
+const DeadlineBadge = ({ days }: { days: number | null }) => {
+    if (days === null) {
+        return <span>-</span>;
+    }
+
+    let colorClasses = "";
+    if (days < 15) {
+        colorClasses = "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700";
+    } else if (days <= 20) {
+        colorClasses = "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-700";
+    } else if (days <= 30) {
+        colorClasses = "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-700";
+    } else {
+        colorClasses = "bg-gray-800 text-gray-100 border-gray-900 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700";
+    }
+
+    return (
+        <Badge className={colorClasses}>{days} jours</Badge>
+    );
+};
 
 
 export function InvoiceTableClient({ initialInvoices: defaultInvoices }: InvoiceTableClientProps) {
@@ -175,6 +198,14 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
   const handleViewPdf = (fileName: string) => {
     window.open(`/api/invoices/${encodeURIComponent(fileName)}`, '_blank');
   }
+  
+  const getDaysSinceDeposit = (invoice: Invoice): number | null => {
+    if (!invoice.history || invoice.history.length === 0) {
+      return null;
+    }
+    const depositDate = new Date(invoice.history[0].date);
+    return differenceInDays(new Date(), depositDate);
+  };
 
   return (
     <>
@@ -195,6 +226,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                 <TableHead>Nom du fichier</TableHead>
                 <TableHead>Service</TableHead>
                 <TableHead>Type de dépense</TableHead>
+                <TableHead>Échéance</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -202,7 +234,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12">Chargement des factures...</TableCell>
+                  <TableCell colSpan={7} className="text-center py-12">Chargement des factures...</TableCell>
                 </TableRow>
               ) : visibleInvoices.length > 0 ? (
                 visibleInvoices.map((invoice) => {
@@ -225,6 +257,9 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                       </TableCell>
                        <TableCell>
                         {invoice.expenseType !== "N/A" ? <Badge variant="secondary">{invoice.expenseType}</Badge> : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <DeadlineBadge days={getDaysSinceDeposit(invoice)} />
                       </TableCell>
                       <TableCell>
                          <CustomBadge color={config.color}>
@@ -296,7 +331,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                 })
               ) : (
                  <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12">Aucune facture en attente pour votre service.</TableCell>
+                  <TableCell colSpan={7} className="text-center py-12">Aucune facture en attente pour votre service.</TableCell>
                 </TableRow>
               )}
             </TableBody>
