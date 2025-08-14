@@ -15,9 +15,33 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { differenceInDays } from 'date-fns';
 
 const INVOICES_STORAGE_KEY = "app_invoices";
 const SERVICES_STORAGE_KEY = "app_services";
+
+
+const DeadlineBadge = ({ days }: { days: number | null }) => {
+    if (days === null) {
+        return <span>-</span>;
+    }
+
+    let colorClasses = "";
+    if (days < 15) {
+        colorClasses = "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700";
+    } else if (days <= 20) {
+        colorClasses = "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-700";
+    } else if (days <= 30) {
+        colorClasses = "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-700";
+    } else {
+        colorClasses = "bg-gray-800 text-gray-100 border-gray-900 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700";
+    }
+
+    return (
+        <Badge className={colorClasses}>{days} jours</Badge>
+    );
+};
+
 
 export default function HistoryPage() {
   const [allInvoices, setAllInvoices] = useState<Invoice[]>([]);
@@ -79,6 +103,19 @@ export default function HistoryPage() {
      return Array.from(statusSet);
   }, [completedInvoices]);
 
+  const getDeadlineDays = (invoice: Invoice): number | null => {
+    if (invoice.status !== 'Mandatée' || invoice.history.length < 2) {
+      return null;
+    }
+    const depositDate = new Date(invoice.history[0].date);
+    const mandatedEntry = invoice.history.find(h => h.status === 'Mandatée');
+    if (!mandatedEntry) return null;
+    
+    const mandatedDate = new Date(mandatedEntry.date);
+    return differenceInDays(mandatedDate, depositDate);
+  };
+
+
   return (
     <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-bold tracking-tight">Historique des factures</h1>
@@ -138,12 +175,15 @@ export default function HistoryPage() {
                            <Table className="w-full">
                               <TableBody>
                                 <TableRow className="border-b-0">
-                                  <TableCell className="font-medium w-1/3">{invoice.fileName}</TableCell>
+                                  <TableCell className="font-medium w-1/4">{invoice.fileName}</TableCell>
                                   <TableCell className="w-1/6">
                                     <Badge variant="outline">{invoice.service}</Badge>
                                   </TableCell>
                                    <TableCell className="w-1/6">
                                     {invoice.expenseType !== "N/A" ? <Badge variant="secondary">{invoice.expenseType}</Badge> : '-'}
+                                  </TableCell>
+                                  <TableCell className="w-1/6">
+                                      <DeadlineBadge days={getDeadlineDays(invoice)} />
                                   </TableCell>
                                   <TableCell className="w-1/6">
                                       <Badge variant={invoice.status === "Mandatée" ? "default" : "destructive"} className={invoice.status === "Mandatée" ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700" : ""}>
@@ -233,5 +273,3 @@ export default function HistoryPage() {
     </div>
   )
 }
-
-    
