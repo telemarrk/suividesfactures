@@ -228,7 +228,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                 <TableHead>Type de dépense</TableHead>
                 <TableHead>Échéance</TableHead>
                 <TableHead>Statut</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
