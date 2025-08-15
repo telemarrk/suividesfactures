@@ -10,7 +10,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
 } from "@/components/ui/card"
 import {
   Table,
@@ -88,8 +87,18 @@ export function ServiceTableClient({ initialServices }: ServiceTableClientProps)
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Services</CardTitle>
-          <CardDescription>Gérer les services et leurs descriptions.</CardDescription>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle>Services</CardTitle>
+              <CardDescription>Gérer les services et leurs descriptions.</CardDescription>
+            </div>
+             <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => handleOpenDialog()}>
+                <PlusCircle className="h-3.5 w-3.5" />
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Ajouter un service
+                </span>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -134,14 +143,6 @@ export function ServiceTableClient({ initialServices }: ServiceTableClientProps)
             </TableBody>
           </Table>
         </CardContent>
-        <CardFooter className="justify-end border-t p-4">
-            <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => handleOpenDialog()}>
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Ajouter un service
-                </span>
-            </Button>
-        </CardFooter>
       </Card>
       <ServiceDialog 
         isOpen={isDialogOpen}
