@@ -20,7 +20,7 @@ function AuthedLayoutContent({ children }: { children: React.ReactNode }) {
     setUserService(service);
   }, []);
 
-  const canViewHistory = !!userService; 
+  const canViewHistory = userService === 'SGFINANCES' || userService === 'SGCOMPUB'; 
   const canViewAdmin = userService === 'SGFINANCES';
 
   return (
