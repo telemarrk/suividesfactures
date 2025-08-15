@@ -226,8 +226,8 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                 <TableHead>Nom du fichier</TableHead>
                 <TableHead>Service</TableHead>
                 <TableHead>Type de dépense</TableHead>
-                <TableHead>Échéance</TableHead>
                 <TableHead>Statut</TableHead>
+                <TableHead>Échéance</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -259,15 +259,15 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                         {invoice.expenseType !== "N/A" ? <Badge variant="secondary">{invoice.expenseType}</Badge> : '-'}
                       </TableCell>
                       <TableCell>
-                        <DeadlineBadge days={getDaysSinceDeposit(invoice)} />
-                      </TableCell>
-                      <TableCell>
                          <CustomBadge color={config.color}>
                             <div className="flex items-center gap-2">
                                <config.icon className="h-3.5 w-3.5" />
                               <span>{config.label}</span>
                             </div>
                          </CustomBadge>
+                      </TableCell>
+                      <TableCell>
+                        <DeadlineBadge days={getDaysSinceDeposit(invoice)} />
                       </TableCell>
                       <TableCell className="text-right">
                          <TooltipProvider>
