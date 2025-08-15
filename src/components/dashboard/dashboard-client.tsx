@@ -51,6 +51,7 @@ export function DashboardClient({ initialInvoices }: DashboardClientProps) {
         if (userService === 'SGFINANCES') {
             const invoicesToProcess = allInvoices.filter(inv => 
                  inv.status === 'En attente de validation Commande Publique' ||
+                 inv.status === 'En attente de validation Service' ||
                  inv.status === 'En attente de mandatement'
             );
             
@@ -96,43 +97,43 @@ export function DashboardClient({ initialInvoices }: DashboardClientProps) {
         if (userService === 'SGFINANCES' && stats) {
             return (
                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <Card>
+                    <Card className="bg-chart-1/10 border-chart-1/20">
                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total à traiter</CardTitle>
-                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <CardTitle className="text-sm font-medium text-chart-1">Total à traiter</CardTitle>
+                            <FileText className="h-4 w-4 text-chart-1/80" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats.total}</div>
-                             <p className="text-xs text-muted-foreground">
+                            <div className="text-2xl font-bold text-chart-1">{stats.total}</div>
+                             <p className="text-xs text-chart-1/80">
                                 Factures en attente de validation ou mandatement
                             </p>
                         </CardContent>
                     </Card>
-                     <Card>
+                     <Card className="bg-chart-2/10 border-chart-2/20">
                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Fonctionnement</CardTitle>
-                            <Building className="h-4 w-4 text-muted-foreground" />
+                            <CardTitle className="text-sm font-medium text-chart-2">Fonctionnement</CardTitle>
+                            <Building className="h-4 w-4 text-chart-2/80" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats.fonctionnement}</div>
+                            <div className="text-2xl font-bold text-chart-2">{stats.fonctionnement}</div>
                         </CardContent>
                     </Card>
-                     <Card>
+                     <Card className="bg-chart-3/10 border-chart-3/20">
                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Fluides</CardTitle>
-                            <Droplets className="h-4 w-4 text-muted-foreground" />
+                            <CardTitle className="text-sm font-medium text-chart-3">Fluides</CardTitle>
+                            <Droplets className="h-4 w-4 text-chart-3/80" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats.fluide}</div>
+                            <div className="text-2xl font-bold text-chart-3">{stats.fluide}</div>
                         </CardContent>
                     </Card>
-                     <Card>
+                     <Card className="bg-chart-4/10 border-chart-4/20">
                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Investissement</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                            <CardTitle className="text-sm font-medium text-chart-4">Investissement</CardTitle>
+                            <TrendingUp className="h-4 w-4 text-chart-4/80" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats.investissement}</div>
+                            <div className="text-2xl font-bold text-chart-4">{stats.investissement}</div>
                         </CardContent>
                     </Card>
                 </div>
