@@ -226,8 +226,8 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                 <TableHead>Nom du fichier</TableHead>
                 <TableHead>Service</TableHead>
                 <TableHead>Type de dépense</TableHead>
-                <TableHead>Statut</TableHead>
                 <TableHead>Échéance</TableHead>
+                <TableHead>Statut</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -258,6 +258,9 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                        <TableCell>
                         {invoice.expenseType !== "N/A" ? <Badge variant="secondary">{invoice.expenseType}</Badge> : '-'}
                       </TableCell>
+                       <TableCell>
+                        <DeadlineBadge days={getDaysSinceDeposit(invoice)} />
+                      </TableCell>
                       <TableCell>
                          <CustomBadge color={config.color}>
                             <div className="flex items-center gap-2">
@@ -265,9 +268,6 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                               <span>{config.label}</span>
                             </div>
                          </CustomBadge>
-                      </TableCell>
-                      <TableCell>
-                        <DeadlineBadge days={getDaysSinceDeposit(invoice)} />
                       </TableCell>
                       <TableCell className="text-right">
                          <TooltipProvider>
@@ -290,11 +290,6 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                                     <MessageSquare className="h-4 w-4" />
                                     <span className="sr-only">Voir les commentaires</span>
                                   </Button>
-                                  {invoice.comments.length > 0 && (
-                                    <Badge className="absolute -top-1 -right-1 h-4 w-4 justify-center p-1 text-xs" variant="destructive">
-                                      {invoice.comments.length}
-                                    </Badge>
-                                  )}
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -348,3 +343,4 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
     </>
   );
 }
+
