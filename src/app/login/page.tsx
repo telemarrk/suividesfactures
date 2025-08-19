@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ThemeProvider } from "@/components/theme-provider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { services as defaultServices } from "@/lib/data";
 import type { Service, UserRole } from "@/lib/types";
@@ -31,7 +30,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 
 const SERVICES_STORAGE_KEY = "app_services";
 
-function LoginPageContent() {
+export default function LoginPage() {
     const router = useRouter();
     const [allServices, setAllServices] = useState<Service[]>([]);
     const [selectedService, setSelectedService] = useState<UserRole | null>(null);
@@ -135,18 +134,5 @@ function LoginPageContent() {
         </CardContent>
       </Card>
     </div>
-  )
-}
-
-export default function LoginPage() {
-  return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <LoginPageContent />
-    </ThemeProvider>
   )
 }

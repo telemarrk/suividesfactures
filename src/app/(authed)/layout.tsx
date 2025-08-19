@@ -10,9 +10,8 @@ import { Logo } from "@/components/logo";
 import { useEffect, useState } from "react";
 import type { UserRole } from "@/lib/types";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { ThemeProvider } from "@/components/theme-provider";
 
-function AuthedLayoutContent({ children }: { children: React.ReactNode }) {
+export default function AuthedLayout({ children }: { children: React.ReactNode }) {
   const [userService, setUserService] = useState<UserRole | null>(null);
 
   useEffect(() => {
@@ -124,22 +123,4 @@ function AuthedLayoutContent({ children }: { children: React.ReactNode }) {
       </div>
     </div>
   );
-}
-
-
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-    return (
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-        >
-            <AuthedLayoutContent>{children}</AuthedLayoutContent>
-        </ThemeProvider>
-    )
 }
