@@ -285,12 +285,10 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                             </Tooltip>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="relative">
-                                  <Button variant="ghost" size="icon" onClick={() => handleViewComments(invoice)}>
-                                    <MessageSquare className="h-4 w-4" />
-                                    <span className="sr-only">Voir les commentaires</span>
-                                  </Button>
-                                </div>
+                                <Button variant="ghost" size="icon" onClick={() => handleViewComments(invoice)}>
+                                  <MessageSquare className="h-4 w-4" />
+                                  <span className="sr-only">Voir les commentaires</span>
+                                </Button>
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>Voir les commentaires</p>
