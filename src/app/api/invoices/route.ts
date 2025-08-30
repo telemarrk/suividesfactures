@@ -7,7 +7,8 @@ import { invoices as defaultInvoices } from '@/lib/data';
 
 // IMPORTANT: This is a local development-only feature.
 // For a production app, invoices should be stored securely in cloud storage.
-const INVOICES_DIR = 'C:/Users/solan/Desktop/Factures/PDF';
+const INVOICES_DIR = process.env.INVOICES_PDF_DIR || 'C:/Users/solan/Desktop/Factures/PDF';
+
 
 const getExpenseType = (fileName: string): ExpenseType => {
     const lowerCaseName = fileName.toLowerCase();
