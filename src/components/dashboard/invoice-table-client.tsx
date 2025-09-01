@@ -235,9 +235,6 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="hidden w-[100px] sm:table-cell">
-                  <span className="sr-only">Type</span>
-                </TableHead>
                 <TableHead>Nom du fichier</TableHead>
                 <TableHead>Service</TableHead>
                 <TableHead>Type de dépense</TableHead>
@@ -249,7 +246,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12">Chargement des factures...</TableCell>
+                  <TableCell colSpan={6} className="text-center py-12">Chargement des factures...</TableCell>
                 </TableRow>
               ) : visibleInvoices.length > 0 ? (
                 visibleInvoices.map((invoice) => {
@@ -264,9 +261,6 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
 
                   return (
                     <TableRow key={invoice.id}>
-                      <TableCell className="hidden sm:table-cell">
-                        <FileText className="h-5 w-5 text-muted-foreground" />
-                      </TableCell>
                       <TableCell className={cn("font-medium", isInvalid && "text-red-600 underline decoration-red-600 decoration-wavy")}>
                         {invoice.fileName}
                       </TableCell>
@@ -349,7 +343,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                 })
               ) : (
                  <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12">Aucune facture en attente pour votre service.</TableCell>
+                  <TableCell colSpan={6} className="text-center py-12">Aucune facture en attente pour votre service.</TableCell>
                 </TableRow>
               )}
             </TableBody>
