@@ -41,36 +41,36 @@ export function DashboardClient({ initialInvoices }: DashboardClientProps) {
     const stats = useMemo(() => {
         if (!userService) return null;
 
+        let invoicesToProcess: Invoice[] = [];
+
         if (userService === 'SGCOMPUB') {
-            const toProcessCount = allInvoices.filter(
+            invoicesToProcess = allInvoices.filter(
                 inv => inv.status === 'En attente de validation Commande Publique'
-            ).length;
-            return { total: toProcessCount };
-        }
-
-        if (userService === 'SGFINANCES') {
-            const invoicesToProcess = allInvoices.filter(inv => 
-                 inv.status === 'En attente de validation Commande Publique' ||
-                 inv.status === 'En attente de validation Service' ||
-                 inv.status === 'En attente de mandatement'
             );
-            
-            const byType = invoicesToProcess.reduce((acc, inv) => {
-                if(inv.expenseType) {
-                    acc[inv.expenseType] = (acc[inv.expenseType] || 0) + 1;
-                }
-                return acc;
-            }, {} as Record<ExpenseType, number>);
-
-            return {
-                total: invoicesToProcess.length,
-                fonctionnement: byType['Fonctionnement'] || 0,
-                fluide: byType['Fluide'] || 0,
-                investissement: byType['Investissement'] || 0
-            };
+        } else if (userService === 'SGFINANCES') {
+            invoicesToProcess = allInvoices.filter(
+                inv => inv.status === 'En attente de mandatement'
+            );
+        } else {
+             // For other services, we can show stats of invoices waiting for their approval
+            invoicesToProcess = allInvoices.filter(
+                inv => inv.service === userService && inv.status === 'En attente de validation Service'
+            );
         }
 
-        return null;
+        const byType = invoicesToProcess.reduce((acc, inv) => {
+            if(inv.expenseType && inv.expenseType !== 'N/A') {
+                acc[inv.expenseType] = (acc[inv.expenseType] || 0) + 1;
+            }
+            return acc;
+        }, {} as Record<ExpenseType, number>);
+
+        return {
+            total: invoicesToProcess.length,
+            fonctionnement: byType['Fonctionnement'] || 0,
+            fluide: byType['Fluide'] || 0,
+            investissement: byType['Investissement'] || 0
+        };
 
     }, [allInvoices, userService]);
 
@@ -105,7 +105,7 @@ export function DashboardClient({ initialInvoices }: DashboardClientProps) {
                         <CardContent>
                             <div className="text-2xl font-bold text-chart-1">{stats.total}</div>
                              <p className="text-xs text-chart-1/80">
-                                Factures en attente de validation ou mandatement
+                                Factures en attente de mandatement
                             </p>
                         </CardContent>
                     </Card>

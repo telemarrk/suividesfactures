@@ -5,9 +5,9 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { invoices as defaultInvoices, services as defaultServices } from "@/lib/data"
-import { CheckCircle2, XCircle, MessageSquare, Eye } from "lucide-react"
+import { CheckCircle2, XCircle, MessageSquare, Eye, Clock } from "lucide-react"
 import { useEffect, useState, useMemo } from "react"
-import type { Invoice, Service, UserRole } from "@/lib/types"
+import type { Invoice, Service, UserRole, InvoiceStatus } from "@/lib/types"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CircleUser } from "lucide-react";
@@ -39,6 +39,26 @@ const DeadlineBadge = ({ days }: { days: number | null }) => {
 
     return (
         <Badge className={colorClasses}>{days} jours</Badge>
+    );
+};
+
+const statusConfig: { [key in InvoiceStatus]?: { icon: React.ElementType, className: string } } = {
+    "Mandatée": { icon: CheckCircle2, className: "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700" },
+    "Rejetée": { icon: XCircle, className: "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-700" },
+    "En attente de mandatement": { icon: Clock, className: "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700" },
+    "En attente de validation Service": { icon: Clock, className: "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-700" },
+    "En attente de validation Commande Publique": { icon: Clock, className: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700" },
+};
+
+const StatusBadge = ({ status }: { status: InvoiceStatus }) => {
+    const config = statusConfig[status];
+    const Icon = config?.icon;
+
+    return (
+        <Badge variant={status === "Rejetée" ? "destructive" : "default"} className={config?.className || ""}>
+            {Icon && <Icon className="mr-2 h-4 w-4" />}
+            {status}
+        </Badge>
     );
 };
 
@@ -78,7 +98,7 @@ export default function HistoryPage() {
             isInProgressButNotOnDashboard = invoice.status === 'En attente de validation Commande Publique' || invoice.status === 'En attente de validation Service';
         }
         if (userService === 'SGCOMPUB') {
-             isInProgressButNotOnDashboard = invoice.status === 'En attente de validation Service' && invoice.service !== 'CCAS' && invoice.service !== 'DRE';
+             isInProgressButNotOnDashboard = invoice.status === 'En attente de validation Service';
         }
 
         return isFinished || isInProgressButNotOnDashboard;
@@ -230,10 +250,7 @@ export default function HistoryPage() {
                                       <DeadlineBadge days={getDeadlineDays(invoice)} />
                                   </TableCell>
                                   <TableCell className="w-1/6 py-2">
-                                     <Badge variant={invoice.status === "Mandatée" ? "default" : invoice.status === "Rejetée" ? "destructive" : "secondary"} className={invoice.status === "Mandatée" ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700" : ""}>
-                                          {invoice.status === "Mandatée" ? <CheckCircle2 className="mr-2 h-4 w-4" /> : invoice.status === "Rejetée" ? <XCircle className="mr-2 h-4 w-4" /> : null}
-                                          {invoice.status}
-                                      </Badge>
+                                     <StatusBadge status={invoice.status} />
                                   </TableCell>
                                   <TableCell className="text-right w-1/6 py-2">
                                     <div className="flex items-center justify-end gap-2">
@@ -316,5 +333,4 @@ export default function HistoryPage() {
         </Card>
     </div>
   )
-
-    
+}
