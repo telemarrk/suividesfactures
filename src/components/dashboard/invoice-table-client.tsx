@@ -277,8 +277,10 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                       <TableCell className={cn("font-medium", isInvalid && "text-red-600 underline decoration-red-600 decoration-wavy")}>
                         {invoice.fileName}
                       </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{getServiceDescription(invoice.service)}</Badge>
+                      <TableCell className={cn(isInvalid && "text-red-600 underline decoration-red-600 decoration-wavy")}>
+                        <Badge variant={isInvalid ? "destructive" : "outline"} className={cn(isInvalid && "border-red-600 bg-red-100/80")}>
+                            {getServiceDescription(invoice.service)}
+                        </Badge>
                       </TableCell>
                        <TableCell>
                         {invoice.expenseType !== "N/A" ? <Badge variant="secondary">{invoice.expenseType}</Badge> : '-'}
@@ -373,5 +375,3 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
     </>
   );
 }
-
-    
