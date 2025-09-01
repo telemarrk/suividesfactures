@@ -111,4 +111,16 @@ export const invoices: Invoice[] = [
     ],
     expenseType: "Investissement",
   },
+  {
+    id: "INV006",
+    fileName: "MAIRIE-test-facture.pdf",
+    service: "SGAFFGENER", // Service arbitraire car non déductible du nom
+    status: "En attente de validation Commande Publique",
+    lastUpdated: "2024-07-23T09:00:00Z",
+    history: [
+        { status: "En attente de validation Commande Publique", date: "2024-07-23T09:00:00Z", by: "System" }
+    ],
+    comments: [],
+    expenseType: "N/A",
+  },
 ];
