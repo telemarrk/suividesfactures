@@ -98,7 +98,7 @@ export default function HistoryPage() {
             isInProgressButNotOnDashboard = invoice.status === 'En attente de validation Commande Publique' || invoice.status === 'En attente de validation Service';
         }
         if (userService === 'SGCOMPUB') {
-             isInProgressButNotOnDashboard = invoice.status === 'En attente de validation Service';
+             isInProgressButNotOnDashboard = invoice.status === 'En attente de validation Service' && invoice.service !== 'SGCOMPUB';
         }
 
         return isFinished || isInProgressButNotOnDashboard;
@@ -338,3 +338,5 @@ export default function HistoryPage() {
     </div>
   )
 }
+
+    
