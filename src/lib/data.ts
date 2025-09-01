@@ -49,6 +49,7 @@ export const invoices: Invoice[] = [
       { id: 'c1', author: 'Alice (Commande Publique)', authorRole: 'Commande Publique', timestamp: '2024-07-22T14:29:00Z', content: 'Vérifié, conforme.' },
     ],
     expenseType: "Fonctionnement",
+    cpRef: "CP2024-001",
   },
   {
     id: "INV002",
@@ -65,6 +66,7 @@ export const invoices: Invoice[] = [
         { id: 'c1', author: 'Bob (SGFINANCES)', authorRole: 'SGFINANCES', timestamp: '2024-07-21T10:59:00Z', content: 'Validé pour le service. Prêt pour mandatement.' },
     ],
     expenseType: "Fonctionnement",
+    cpRef: "CP2024-002",
   },
   {
     id: "INV003",
@@ -77,6 +79,7 @@ export const invoices: Invoice[] = [
     ],
     comments: [],
     expenseType: "Fluide",
+    cpRef: "",
   },
   {
     id: "INV004",
@@ -95,6 +98,7 @@ export const invoices: Invoice[] = [
         { id: 'c2', author: 'Diane (Finance)', authorRole: 'Finance', timestamp: '2024-07-19T16:59:00Z', content: 'Mandatement effectué.' },
     ],
     expenseType: "Investissement",
+    cpRef: "CP2024-003",
   },
   {
     id: "INV005",
@@ -110,6 +114,7 @@ export const invoices: Invoice[] = [
         { id: 'c1', author: 'Alice (Commande Publique)', authorRole: 'Commande Publique', timestamp: '2024-07-20T17:59:00Z', content: 'Manque le bon de commande. Facture rejetée.' },
     ],
     expenseType: "Investissement",
+    cpRef: "",
   },
   {
     id: "INV006",
@@ -122,6 +127,7 @@ export const invoices: Invoice[] = [
     ],
     comments: [],
     expenseType: "N/A",
+    cpRef: "",
   },
   {
     id: "INV007",
@@ -135,5 +141,6 @@ export const invoices: Invoice[] = [
     ],
     comments: [],
     expenseType: "Fonctionnement",
+    cpRef: "CP2024-004",
   },
 ];

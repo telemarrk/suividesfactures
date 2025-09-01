@@ -44,7 +44,7 @@ const DeadlineBadge = ({ days }: { days: number | null }) => {
 
 const statusConfig: { [key in InvoiceStatus]?: { icon: React.ElementType, className: string } } = {
     "Mandatée": { icon: CheckCircle2, className: "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700" },
-    "Rejetée": { icon: XCircle, className: "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-700" },
+    "Rejetée": { icon: XCircle, className: "bg-destructive text-destructive-foreground" },
     "En attente de mandatement": { icon: Clock, className: "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700" },
     "En attente de validation Service": { icon: Clock, className: "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-700" },
     "En attente de validation Commande Publique": { icon: Clock, className: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700" },
@@ -225,6 +225,7 @@ export default function HistoryPage() {
                         <TableHead className="w-1/4">Nom du fichier</TableHead>
                         <TableHead className="w-1/6">Service</TableHead>
                         <TableHead className="w-1/6">Type</TableHead>
+                        <TableHead className="w-1/6">Réf. CP</TableHead>
                         <TableHead className="w-1/6">Délai</TableHead>
                         <TableHead className="w-1/6">Statut</TableHead>
                         <TableHead className="text-right w-1/6">Dernière MAJ</TableHead>
@@ -245,6 +246,9 @@ export default function HistoryPage() {
                                   </TableCell>
                                    <TableCell className="w-1/6 py-2">
                                     {invoice.expenseType !== "N/A" ? <Badge variant="secondary">{invoice.expenseType}</Badge> : '-'}
+                                  </TableCell>
+                                  <TableCell className="w-1/6 py-2">
+                                    {invoice.cpRef || '-'}
                                   </TableCell>
                                   <TableCell className="w-1/6 py-2">
                                       <DeadlineBadge days={getDeadlineDays(invoice)} />

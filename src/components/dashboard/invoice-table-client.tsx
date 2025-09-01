@@ -13,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/
 import { invoices as defaultInvoices, services as defaultServices } from "@/lib/data";
 import { differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Input } from "../ui/input";
 
 
 const INVOICES_STORAGE_KEY = "app_invoices";
@@ -142,7 +143,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
 
   useEffect(() => {
     if (userService) {
-      const filteredInvoices = allInvoices.filter(inv => {
+       const filteredInvoices = allInvoices.filter(inv => {
         if (inv.status === 'Mandatée' || inv.status === 'Rejetée') {
             return false;
         }
@@ -243,6 +244,10 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
     const service = allServices.find(s => s.name === serviceName);
     return service ? service.description : serviceName;
   }
+  
+  const handleCpRefChange = (invoiceId: string, value: string) => {
+    handleUpdateInvoice(invoiceId, { cpRef: value });
+  };
 
 
   return (
@@ -261,6 +266,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                 <TableHead>Nom du fichier</TableHead>
                 <TableHead>Service</TableHead>
                 <TableHead>Type de dépense</TableHead>
+                <TableHead>Réf. de la CP</TableHead>
                 <TableHead>Échéance</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
@@ -269,7 +275,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12">Chargement des factures...</TableCell>
+                  <TableCell colSpan={7} className="text-center py-12">Chargement des factures...</TableCell>
                 </TableRow>
               ) : visibleInvoices.length > 0 ? (
                 visibleInvoices.map((invoice) => {
@@ -280,6 +286,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                       (userService === invoice.service && invoice.status === 'En attente de validation Service');
                   
                   const isInvalid = isFileNameInvalid(invoice);
+                  const canEditCpRef = userService === 'SGCOMPUB' && invoice.status === 'En attente de validation Commande Publique';
 
                   return (
                     <TableRow key={invoice.id}>
@@ -287,12 +294,26 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                         {invoice.fileName}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={isInvalid ? "destructive" : "outline"} className={cn("whitespace-nowrap", isInvalid && "border-red-600 bg-red-100/80")}>
+                        <Badge variant={isInvalid ? "destructive" : "outline"} className={cn("whitespace-nowrap", isInvalid && "border-red-600 bg-red-100/80 text-red-600 underline decoration-red-600 decoration-wavy")}>
                             {getServiceDescription(invoice.service)}
                         </Badge>
                       </TableCell>
                        <TableCell>
                         {invoice.expenseType !== "N/A" ? <Badge variant="secondary">{invoice.expenseType}</Badge> : '-'}
+                      </TableCell>
+                      <TableCell>
+                        {canEditCpRef ? (
+                            <Input 
+                                type="text"
+                                value={invoice.cpRef || ''}
+                                onChange={(e) => handleCpRefChange(invoice.id, e.target.value)}
+                                maxLength={14}
+                                className="h-8 w-[140px]"
+                                placeholder="Saisir réf."
+                            />
+                        ) : (
+                           <span>{invoice.cpRef || '-'}</span>
+                        )}
                       </TableCell>
                        <TableCell>
                         <DeadlineBadge days={getDaysSinceDeposit(invoice)} />
@@ -367,7 +388,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                 })
               ) : (
                  <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12">Aucune facture en attente pour votre service.</TableCell>
+                  <TableCell colSpan={7} className="text-center py-12">Aucune facture en attente pour votre service.</TableCell>
                 </TableRow>
               )}
             </TableBody>

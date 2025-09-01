@@ -45,6 +45,7 @@ export async function GET() {
             history: [initialHistoryEntry],
             comments: [],
             expenseType: getExpenseType(file),
+            cpRef: "",
         };
     });
 

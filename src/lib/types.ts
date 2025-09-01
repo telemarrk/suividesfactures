@@ -34,6 +34,7 @@ export interface Invoice {
   history: { status: InvoiceStatus; date: string; by: string }[];
   comments: Comment[];
   expenseType: ExpenseType;
+  cpRef?: string;
 }
 
 export interface Service {
