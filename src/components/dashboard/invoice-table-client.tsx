@@ -2,21 +2,23 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MoreHorizontal, FileText, CheckCircle2, XCircle, Clock, MessageSquare, Trash, Pencil, Send, Eye } from "lucide-react";
+import { MoreHorizontal, CheckCircle2, XCircle, Clock, MessageSquare, Trash, Pencil, Send, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CommentsDrawer } from "./comments-drawer";
-import type { Invoice, InvoiceStatus, UserRole, Comment } from "@/lib/types";
+import type { Invoice, InvoiceStatus, UserRole, Comment, Service } from "@/lib/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
-import { invoices as defaultInvoices } from "@/lib/data";
+import { invoices as defaultInvoices, services as defaultServices } from "@/lib/data";
 import { differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
 
 
 const INVOICES_STORAGE_KEY = "app_invoices";
+const SERVICES_STORAGE_KEY = "app_services";
+
 
 interface InvoiceTableClientProps {
   initialInvoices: Invoice[];
@@ -72,6 +74,7 @@ const DeadlineBadge = ({ days }: { days: number | null }) => {
 
 export function InvoiceTableClient({ initialInvoices: defaultInvoices }: InvoiceTableClientProps) {
   const [allInvoices, setAllInvoices] = useState<Invoice[]>([]);
+  const [allServices, setAllServices] = useState<Service[]>([]);
   const [visibleInvoices, setVisibleInvoices] = useState<Invoice[]>([]);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -111,6 +114,11 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
   useEffect(() => {
     const service = localStorage.getItem("user_service") as UserRole | null;
     setUserService(service);
+
+    const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
+    const services = storedServices ? JSON.parse(storedServices) : defaultServices;
+    setAllServices(services);
+    
     fetchInvoices();
 
     const handleStorageChange = () => {
@@ -220,6 +228,11 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
 
     return true;
   };
+  
+  const getServiceDescription = (serviceName: UserRole): string => {
+    const service = allServices.find(s => s.name === serviceName);
+    return service ? service.description : serviceName;
+  }
 
 
   return (
@@ -265,7 +278,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                         {invoice.fileName}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{invoice.service}</Badge>
+                        <Badge variant="outline">{getServiceDescription(invoice.service)}</Badge>
                       </TableCell>
                        <TableCell>
                         {invoice.expenseType !== "N/A" ? <Badge variant="secondary">{invoice.expenseType}</Badge> : '-'}

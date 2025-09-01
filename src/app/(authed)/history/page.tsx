@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { invoices as defaultInvoices, services as defaultServices } from "@/lib/data"
 import { CheckCircle2, XCircle, MessageSquare, Eye } from "lucide-react"
 import { useEffect, useState, useMemo } from "react"
-import type { Invoice, Service } from "@/lib/types"
+import type { Invoice, Service, UserRole } from "@/lib/types"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CircleUser } from "lucide-react";
@@ -114,6 +114,21 @@ export default function HistoryPage() {
     const mandatedDate = new Date(mandatedEntry.date);
     return differenceInDays(mandatedDate, depositDate);
   };
+  
+  const getServiceDescription = (serviceName: UserRole): string => {
+    const service = allServices.find(s => s.name === serviceName);
+    return service ? service.description : serviceName;
+  }
+
+  const getAuthorDescription = (author: string): string => {
+    // Assuming author is a UserRole
+    try {
+        const service = allServices.find(s => s.name === author);
+        return service ? service.description : author;
+    } catch (e) {
+        return author;
+    }
+  }
 
 
   return (
@@ -177,7 +192,7 @@ export default function HistoryPage() {
                                 <TableRow className="border-b-0">
                                   <TableCell className="font-medium w-1/4">{invoice.fileName}</TableCell>
                                   <TableCell className="w-1/6">
-                                    <Badge variant="outline">{invoice.service}</Badge>
+                                    <Badge variant="outline">{getServiceDescription(invoice.service)}</Badge>
                                   </TableCell>
                                    <TableCell className="w-1/6">
                                     {invoice.expenseType !== "N/A" ? <Badge variant="secondary">{invoice.expenseType}</Badge> : '-'}
@@ -223,7 +238,7 @@ export default function HistoryPage() {
                                 {invoice.history.map((h, index) => (
                                   <li key={index} className="flex items-center gap-2">
                                      <Badge variant="secondary">{h.status}</Badge>
-                                     <span>par <strong>{h.by}</strong> le {new Date(h.date).toLocaleDateString()}</span>
+                                     <span>par <strong>{getAuthorDescription(h.by)}</strong> le {new Date(h.date).toLocaleDateString()}</span>
                                   </li>
                                 ))}
                               </ul>
@@ -243,7 +258,7 @@ export default function HistoryPage() {
                                         </Avatar>
                                         <div className="grid gap-1">
                                             <div className="flex items-center gap-2">
-                                                <div className="font-semibold text-sm">{comment.author}</div>
+                                                <div className="font-semibold text-sm">{getAuthorDescription(comment.author)}</div>
                                                 <div className="text-xs text-muted-foreground">
                                                     {new Date(comment.timestamp).toLocaleString()}
                                                 </div>
