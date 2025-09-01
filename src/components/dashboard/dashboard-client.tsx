@@ -41,22 +41,20 @@ export function DashboardClient({ initialInvoices }: DashboardClientProps) {
     const stats = useMemo(() => {
         if (!userService) return null;
 
-        let invoicesToProcess: Invoice[] = [];
+        const invoicesToProcess = allInvoices.filter(inv => {
+             if (inv.status === 'Mandatée' || inv.status === 'Rejetée') {
+                return false;
+            }
 
-        if (userService === 'SGCOMPUB') {
-            invoicesToProcess = allInvoices.filter(
-                inv => inv.status === 'En attente de validation Commande Publique'
-            );
-        } else if (userService === 'SGFINANCES') {
-            invoicesToProcess = allInvoices.filter(
-                inv => inv.status === 'En attente de mandatement'
-            );
-        } else {
-             // For other services, we can show stats of invoices waiting for their approval
-            invoicesToProcess = allInvoices.filter(
-                inv => inv.service === userService && inv.status === 'En attente de validation Service'
-            );
-        }
+            switch (userService) {
+                case 'SGFINANCES':
+                    return inv.status === 'En attente de mandatement' || (inv.service === 'SGFINANCES' && inv.status === 'En attente de validation Service');
+                case 'SGCOMPUB':
+                    return inv.status === 'En attente de validation Commande Publique' || (inv.service === 'SGCOMPUB' && inv.status === 'En attente de validation Service');
+                default:
+                    return inv.service === userService && inv.status === 'En attente de validation Service';
+            }
+        });
 
         const byType = invoicesToProcess.reduce((acc, inv) => {
             if(inv.expenseType && inv.expenseType !== 'N/A') {
@@ -77,35 +75,32 @@ export function DashboardClient({ initialInvoices }: DashboardClientProps) {
     const renderStats = () => {
         if (!stats) return null;
 
+        let title = "Factures à traiter";
+        let description = "";
+
         if (userService === 'SGCOMPUB') {
-            return (
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Factures à traiter</CardTitle>
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.total}</div>
-                        <p className="text-xs text-muted-foreground">
-                            En attente de validation de la Commande Publique
-                        </p>
-                    </CardContent>
-                </Card>
-            )
+            title = "Factures à valider (Commande Publique)";
+            description = `Dont ${stats.total - (stats.fonctionnement + stats.fluide + stats.investissement)} factures de service SGCOMPUB`
+        } else if (userService === 'SGFINANCES') {
+             title = "Factures à mandater";
+             description = `Dont ${stats.total - (stats.fonctionnement + stats.fluide + stats.investissement)} factures de service SGFINANCES`
+        } else if (userService) {
+             title = `Factures à valider (${userService})`;
         }
-        
+
+
         if (userService === 'SGFINANCES' && stats) {
             return (
                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <Card className="bg-chart-1/10 border-chart-1/20">
+                    <Card className="bg-chart-1/10 border-chart-1/20 col-span-1 md:col-span-2 lg:col-span-4">
                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-chart-1">Total à traiter</CardTitle>
+                            <CardTitle className="text-sm font-medium text-chart-1">{title}</CardTitle>
                             <FileText className="h-4 w-4 text-chart-1/80" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold text-chart-1">{stats.total}</div>
                              <p className="text-xs text-chart-1/80">
-                                Factures en attente de mandatement
+                                {description}
                             </p>
                         </CardContent>
                     </Card>
@@ -137,6 +132,23 @@ export function DashboardClient({ initialInvoices }: DashboardClientProps) {
                         </CardContent>
                     </Card>
                 </div>
+            )
+        }
+        
+         if (stats.total > 0) {
+            return (
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{stats.total}</div>
+                         <p className="text-xs text-muted-foreground">
+                           {description}
+                        </p>
+                    </CardContent>
+                </Card>
             )
         }
 

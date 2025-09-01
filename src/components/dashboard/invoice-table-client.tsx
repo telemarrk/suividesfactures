@@ -2,11 +2,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MoreHorizontal, CheckCircle2, XCircle, Clock, MessageSquare, Trash, Pencil, Send, Eye } from "lucide-react";
+import { MoreHorizontal, CheckCircle2, XCircle, Clock, MessageSquare, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CommentsDrawer } from "./comments-drawer";
 import type { Invoice, InvoiceStatus, UserRole, Comment, Service } from "@/lib/types";
@@ -150,9 +149,9 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
 
         switch (userService) {
             case 'SGFINANCES':
-                return inv.status === 'En attente de mandatement';
+                return inv.status === 'En attente de mandatement' || (inv.service === 'SGFINANCES' && inv.status === 'En attente de validation Service');
             case 'SGCOMPUB':
-                 return inv.status === 'En attente de validation Commande Publique';
+                 return inv.status === 'En attente de validation Commande Publique' || (inv.service === 'SGCOMPUB' && inv.status === 'En attente de validation Service');
             default:
                 return inv.service === userService && inv.status === 'En attente de validation Service';
         }
@@ -188,7 +187,18 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
     if (action === "approve") {
         if (invoice.status === 'En attente de validation Commande Publique') nextStatus = 'En attente de validation Service';
         else if (invoice.status === 'En attente de validation Service') {
-            nextStatus = 'En attente de mandatement';
+            const bypassCompub = invoice.service === 'CCAS' || invoice.service === 'DRE' || invoice.service === 'SAAD';
+            if (bypassCompub) {
+                nextStatus = 'En attente de mandatement';
+            } else {
+                 const serviceHasValidated = invoice.history.some(h => h.status === 'En attente de validation Service');
+                 // If the service is Compub or Finance acting as service, they have already validated at this stage.
+                 if (serviceHasValidated || invoice.service === 'SGCOMPUB' || invoice.service === 'SGFINANCES') {
+                    nextStatus = 'En attente de mandatement';
+                 } else {
+                    nextStatus = 'En attente de validation Service';
+                 }
+            }
         }
         else if (invoice.status === 'En attente de mandatement') nextStatus = 'Mandatée';
     } else {
@@ -219,11 +229,14 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
     const startsWithSG = servicePart.startsWith("SG");
     const isSpecialService = specialServices.includes(servicePart);
 
-    if (startsWithSG || isSpecialService) {
+    if (startsWithSG && servicePart !== 'SGAFFGENER' && invoice.service === 'SGAFFGENER') { // SGAFFGENER can have bad names
+         return invoice.expenseType === "N/A";
+    }
+     if (isSpecialService) {
         return invoice.expenseType === "N/A";
     }
 
-    return true;
+    return servicePart.toUpperCase() !== invoice.service.toUpperCase();
   };
   
   const getServiceDescription = (serviceName: UserRole): string => {
@@ -238,7 +251,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
         <CardHeader>
           <CardTitle>Factures en attente</CardTitle>
           <CardDescription>
-            Liste des factures nécessitant une action.
+            Liste des factures nécessitant une action de votre part.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -266,7 +279,6 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                       (userService === 'SGFINANCES' && invoice.status === 'En attente de mandatement') ||
                       (userService === invoice.service && invoice.status === 'En attente de validation Service');
                   
-                  const isFinanceOrCompubService = (invoice.service === 'SGFINANCES' || invoice.service === 'SGCOMPUB');
                   const isInvalid = isFileNameInvalid(invoice);
 
                   return (
@@ -275,7 +287,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                         {invoice.fileName}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={isInvalid ? "destructive" : "outline"} className={cn("whitespace-nowrap", isInvalid && "text-red-600 underline decoration-red-600 decoration-wavy border-red-600 bg-red-100/80")}>
+                        <Badge variant={isInvalid ? "destructive" : "outline"} className={cn("whitespace-nowrap", isInvalid && "border-red-600 bg-red-100/80")}>
                             {getServiceDescription(invoice.service)}
                         </Badge>
                       </TableCell>
