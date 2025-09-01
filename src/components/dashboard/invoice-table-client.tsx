@@ -13,6 +13,7 @@ import type { Invoice, InvoiceStatus, UserRole, Comment } from "@/lib/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { invoices as defaultInvoices } from "@/lib/data";
 import { differenceInDays } from "date-fns";
+import { cn } from "@/lib/utils";
 
 
 const INVOICES_STORAGE_KEY = "app_invoices";
@@ -207,6 +208,20 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
     return differenceInDays(new Date(), depositDate);
   };
 
+  const isFileNameInvalid = (invoice: Invoice): boolean => {
+    const specialServices = ["CCAS", "SAAD", "DRE"];
+    const servicePart = invoice.fileName.split('-')[0].toUpperCase();
+    const startsWithSG = servicePart.startsWith("SG");
+    const isSpecialService = specialServices.includes(servicePart);
+
+    if (startsWithSG || isSpecialService) {
+        return invoice.expenseType === "N/A";
+    }
+
+    return true;
+  };
+
+
   return (
     <>
       <Card>
@@ -245,13 +260,16 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                       (userService === invoice.service && invoice.status === 'En attente de validation Service');
                   
                   const isFinanceOrCompubService = (invoice.service === 'SGFINANCES' || invoice.service === 'SGCOMPUB');
+                  const isInvalid = isFileNameInvalid(invoice);
 
                   return (
                     <TableRow key={invoice.id}>
                       <TableCell className="hidden sm:table-cell">
                         <FileText className="h-5 w-5 text-muted-foreground" />
                       </TableCell>
-                      <TableCell className="font-medium">{invoice.fileName}</TableCell>
+                      <TableCell className={cn("font-medium", isInvalid && "text-red-600 underline decoration-red-600 decoration-wavy")}>
+                        {invoice.fileName}
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline">{invoice.service}</Badge>
                       </TableCell>
@@ -296,7 +314,7 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                             </Tooltip>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                 <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => handleAction(invoice.id, 'approve')} disabled={!canValidate}>
+                                 <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => handleAction(invoice.id, 'approve')} disabled={!canValidate || isInvalid}>
                                   <CheckCircle2 className="h-4 w-4" />
                                   <span className="sr-only">Approuver</span>
                                 </Button>
@@ -341,4 +359,3 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
     </>
   );
 }
-
