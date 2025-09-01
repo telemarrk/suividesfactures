@@ -3,7 +3,7 @@
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { invoices as defaultInvoices, services as defaultServices } from "@/lib/data"
 import { CheckCircle2, XCircle, MessageSquare, Eye } from "lucide-react"
 import { useEffect, useState, useMemo } from "react"
@@ -199,31 +199,43 @@ export default function HistoryPage() {
               </div>
             </CardHeader>
             <CardContent>
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                        <TableHead className="w-1/4">Nom du fichier</TableHead>
+                        <TableHead className="w-1/6">Service</TableHead>
+                        <TableHead className="w-1/6">Type</TableHead>
+                        <TableHead className="w-1/6">Délai</TableHead>
+                        <TableHead className="w-1/6">Statut</TableHead>
+                        <TableHead className="text-right w-1/6">Dernière MAJ</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                </Table>
               <Accordion type="single" collapsible className="w-full">
                 {filteredInvoices.map((invoice) => (
-                   <AccordionItem value={invoice.id} key={invoice.id}>
-                      <AccordionTrigger className="hover:no-underline">
+                   <AccordionItem value={invoice.id} key={invoice.id} className="border-b-0">
+                      <AccordionTrigger className="hover:no-underline p-0">
                         <div className="w-full">
                            <Table className="w-full">
                               <TableBody>
                                 <TableRow className="border-b-0">
-                                  <TableCell className="font-medium w-1/4">{invoice.fileName}</TableCell>
-                                  <TableCell className="w-1/6">
+                                  <TableCell className="font-medium w-1/4 py-2">{invoice.fileName}</TableCell>
+                                  <TableCell className="w-1/6 py-2">
                                     <Badge variant="outline" className="whitespace-nowrap">{getServiceDescription(invoice.service)}</Badge>
                                   </TableCell>
-                                   <TableCell className="w-1/6">
+                                   <TableCell className="w-1/6 py-2">
                                     {invoice.expenseType !== "N/A" ? <Badge variant="secondary">{invoice.expenseType}</Badge> : '-'}
                                   </TableCell>
-                                  <TableCell className="w-1/6">
+                                  <TableCell className="w-1/6 py-2">
                                       <DeadlineBadge days={getDeadlineDays(invoice)} />
                                   </TableCell>
-                                  <TableCell className="w-1/6">
-                                      <Badge variant={invoice.status === "Mandatée" ? "default" : "destructive"} className={invoice.status === "Mandatée" ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700" : ""}>
-                                      {invoice.status === "Mandatée" ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <XCircle className="mr-2 h-4 w-4" />}
-                                      {invoice.status}
+                                  <TableCell className="w-1/6 py-2">
+                                     <Badge variant={invoice.status === "Mandatée" ? "default" : invoice.status === "Rejetée" ? "destructive" : "secondary"} className={invoice.status === "Mandatée" ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700" : ""}>
+                                          {invoice.status === "Mandatée" ? <CheckCircle2 className="mr-2 h-4 w-4" /> : invoice.status === "Rejetée" ? <XCircle className="mr-2 h-4 w-4" /> : null}
+                                          {invoice.status}
                                       </Badge>
                                   </TableCell>
-                                  <TableCell className="text-right w-1/6">
+                                  <TableCell className="text-right w-1/6 py-2">
                                     <div className="flex items-center justify-end gap-2">
                                       <span>{new Date(invoice.lastUpdated).toLocaleDateString()}</span>
                                       <TooltipProvider>
@@ -304,4 +316,5 @@ export default function HistoryPage() {
         </Card>
     </div>
   )
-}
+
+    
