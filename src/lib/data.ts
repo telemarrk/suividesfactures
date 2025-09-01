@@ -123,4 +123,17 @@ export const invoices: Invoice[] = [
     comments: [],
     expenseType: "N/A",
   },
+  {
+    id: "INV007",
+    fileName: "SGFINANCES-test-service-validation-f-.pdf",
+    service: "SGFINANCES",
+    status: "En attente de validation Service",
+    lastUpdated: "2024-07-25T10:00:00Z",
+    history: [
+        { status: "En attente de validation Commande Publique", date: "2024-07-25T09:00:00Z", by: "System" },
+        { status: "En attente de validation Service", date: "2024-07-25T10:00:00Z", by: "SGCOMPUB" }
+    ],
+    comments: [],
+    expenseType: "Fonctionnement",
+  },
 ];
