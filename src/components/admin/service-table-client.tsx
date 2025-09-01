@@ -96,27 +96,29 @@ export function ServiceTableClient({ initialServices }: ServiceTableClientProps)
     <>
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-start mb-4">
+          <div className="flex flex-col gap-4">
             <div>
               <CardTitle>Services</CardTitle>
               <CardDescription>Gérer les services et leurs descriptions.</CardDescription>
             </div>
-             <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => handleOpenDialog()}>
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Ajouter un service
-                </span>
-            </Button>
-          </div>
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Rechercher un service..."
-              className="pl-8 sm:w-[300px]"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            <div className="flex justify-between items-center">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Rechercher un service..."
+                  className="pl-8 sm:w-[300px]"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => handleOpenDialog()}>
+                  <PlusCircle className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                      Ajouter un service
+                  </span>
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
