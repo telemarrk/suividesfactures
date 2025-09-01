@@ -150,12 +150,9 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
 
         switch (userService) {
             case 'SGFINANCES':
-                return inv.status === 'En attente de validation Commande Publique' ||
-                       inv.status === 'En attente de validation Service' ||
-                       inv.status === 'En attente de mandatement';
+                return inv.status === 'En attente de mandatement';
             case 'SGCOMPUB':
-                 return inv.status === 'En attente de validation Commande Publique' ||
-                        (inv.status === 'En attente de validation Service' && inv.service !== 'CCAS' && inv.service !== 'DRE');
+                 return inv.status === 'En attente de validation Commande Publique';
             default:
                 return inv.service === userService && inv.status === 'En attente de validation Service';
         }
@@ -277,8 +274,8 @@ export function InvoiceTableClient({ initialInvoices: defaultInvoices }: Invoice
                       <TableCell className={cn("font-medium", isInvalid && "text-red-600 underline decoration-red-600 decoration-wavy")}>
                         {invoice.fileName}
                       </TableCell>
-                      <TableCell className={cn(isInvalid && "text-red-600 underline decoration-red-600 decoration-wavy")}>
-                        <Badge variant={isInvalid ? "destructive" : "outline"} className={cn(isInvalid && "border-red-600 bg-red-100/80")}>
+                      <TableCell>
+                        <Badge variant={isInvalid ? "destructive" : "outline"} className={cn("whitespace-nowrap", isInvalid && "text-red-600 underline decoration-red-600 decoration-wavy border-red-600 bg-red-100/80")}>
                             {getServiceDescription(invoice.service)}
                         </Badge>
                       </TableCell>

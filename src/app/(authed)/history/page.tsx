@@ -51,6 +51,8 @@ export default function HistoryPage() {
   const [serviceFilter, setServiceFilter] = useState<string>("all");
   const [expenseTypeFilter, setExpenseTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [userService, setUserService] = useState<UserRole | null>(null);
+
 
   useEffect(() => {
       const storedInvoices = localStorage.getItem(INVOICES_STORAGE_KEY);
@@ -60,16 +62,31 @@ export default function HistoryPage() {
       const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
       const services = storedServices ? JSON.parse(storedServices) : defaultServices;
       setAllServices(services);
+
+      const service = localStorage.getItem("user_service") as UserRole | null;
+      setUserService(service);
   }, []);
 
-  const completedInvoices = useMemo(() => {
-    return allInvoices.filter(
-      (invoice) => invoice.status === "Mandatée" || invoice.status === "Rejetée"
-    );
-  }, [allInvoices]);
+  const invoicesForHistory = useMemo(() => {
+    if (!userService) return [];
+    
+    return allInvoices.filter(invoice => {
+        const isFinished = invoice.status === "Mandatée" || invoice.status === "Rejetée";
+        
+        let isInProgressButNotOnDashboard = false;
+        if (userService === 'SGFINANCES') {
+            isInProgressButNotOnDashboard = invoice.status === 'En attente de validation Commande Publique' || invoice.status === 'En attente de validation Service';
+        }
+        if (userService === 'SGCOMPUB') {
+             isInProgressButNotOnDashboard = invoice.status === 'En attente de validation Service' && invoice.service !== 'CCAS' && invoice.service !== 'DRE';
+        }
+
+        return isFinished || isInProgressButNotOnDashboard;
+    });
+  }, [allInvoices, userService]);
   
   useEffect(() => {
-    let invoices = completedInvoices;
+    let invoices = invoicesForHistory;
     if (serviceFilter !== 'all') {
         invoices = invoices.filter(invoice => invoice.service === serviceFilter);
     }
@@ -80,7 +97,7 @@ export default function HistoryPage() {
         invoices = invoices.filter(invoice => invoice.status === statusFilter);
     }
     setFilteredInvoices(invoices);
-  }, [completedInvoices, serviceFilter, expenseTypeFilter, statusFilter]);
+  }, [invoicesForHistory, serviceFilter, expenseTypeFilter, statusFilter]);
   
 
   const handleViewPdf = (fileName: string) => {
@@ -94,14 +111,14 @@ export default function HistoryPage() {
   };
 
   const expenseTypes = useMemo(() => {
-     const types = new Set(completedInvoices.map(inv => inv.expenseType));
+     const types = new Set(invoicesForHistory.map(inv => inv.expenseType));
      return Array.from(types).filter(t => t !== "N/A");
-  }, [completedInvoices]);
+  }, [invoicesForHistory]);
 
   const statuses = useMemo(() => {
-     const statusSet = new Set(completedInvoices.map(inv => inv.status));
+     const statusSet = new Set(invoicesForHistory.map(inv => inv.status));
      return Array.from(statusSet);
-  }, [completedInvoices]);
+  }, [invoicesForHistory]);
 
   const getDeadlineDays = (invoice: Invoice): number | null => {
     if (invoice.status !== 'Mandatée' || invoice.history.length < 2) {
@@ -138,9 +155,9 @@ export default function HistoryPage() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle>Factures traitées</CardTitle>
+                  <CardTitle>Factures traitées et en cours</CardTitle>
                   <CardDescription>
-                      Liste de toutes les factures qui ont terminé le cycle de validation.
+                      Liste de toutes les factures qui ont terminé le cycle ou qui sont en cours de validation.
                   </CardDescription>
                 </div>
                  <div className="flex items-center gap-2">
@@ -192,7 +209,7 @@ export default function HistoryPage() {
                                 <TableRow className="border-b-0">
                                   <TableCell className="font-medium w-1/4">{invoice.fileName}</TableCell>
                                   <TableCell className="w-1/6">
-                                    <Badge variant="outline">{getServiceDescription(invoice.service)}</Badge>
+                                    <Badge variant="outline" className="whitespace-nowrap">{getServiceDescription(invoice.service)}</Badge>
                                   </TableCell>
                                    <TableCell className="w-1/6">
                                     {invoice.expenseType !== "N/A" ? <Badge variant="secondary">{invoice.expenseType}</Badge> : '-'}
@@ -280,7 +297,7 @@ export default function HistoryPage() {
               </Accordion>
                {filteredInvoices.length === 0 && (
                  <div className="text-center text-muted-foreground py-12">
-                    {completedInvoices.length > 0 ? "Aucune facture ne correspond à vos critères de recherche." : "Aucune facture dans l'historique pour le moment."}
+                    {invoicesForHistory.length > 0 ? "Aucune facture ne correspond à vos critères de recherche." : "Aucune facture dans l'historique pour le moment."}
                  </div>
                )}
             </CardContent>
