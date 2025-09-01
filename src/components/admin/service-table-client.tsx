@@ -36,7 +36,7 @@ interface ServiceTableClientProps {
 }
 
 export function ServiceTableClient({ initialServices }: ServiceTableClientProps) {
-  const [services, setServices] = useState<Service[]>([])
+  const [services, setServices] = useState<Service[]>(initialServices)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
@@ -46,19 +46,21 @@ export function ServiceTableClient({ initialServices }: ServiceTableClientProps)
     if (storedServices) {
       setServices(JSON.parse(storedServices));
     } else {
-      setServices(initialServices);
       localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(initialServices));
     }
   }, [initialServices]);
 
   const filteredServices = useMemo(() => {
+    if (!searchTerm) {
+      return services;
+    }
     return services.filter(service => 
       service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       service.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [services, searchTerm]);
 
-  const updateServices = (updatedServices: Service[]) => {
+  const updateServicesInStorage = (updatedServices: Service[]) => {
     setServices(updatedServices);
     localStorage.setItem(SERVICES_STORAGE_KEY, JSON.stringify(updatedServices));
   };
@@ -74,22 +76,20 @@ export function ServiceTableClient({ initialServices }: ServiceTableClientProps)
     setSelectedService(null)
   }
 
-  const handleSaveService = (service: Service) => {
+  const handleSaveService = (serviceToSave: Service) => {
     let updatedServices;
     if (selectedService) {
-      // Edit
-      updatedServices = services.map(s => s.id === service.id ? service : s);
+      updatedServices = services.map(s => s.id === serviceToSave.id ? serviceToSave : s);
     } else {
-      // Add
-      updatedServices = [...services, service];
+      updatedServices = [...services, { ...serviceToSave, id: new Date().toISOString() }];
     }
-    updateServices(updatedServices);
+    updateServicesInStorage(updatedServices);
     handleCloseDialog()
   }
 
   const handleDeleteService = (serviceId: string) => {
     const updatedServices = services.filter(s => s.id !== serviceId);
-    updateServices(updatedServices);
+    updateServicesInStorage(updatedServices);
   }
 
   return (
