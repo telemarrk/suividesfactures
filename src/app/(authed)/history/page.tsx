@@ -288,7 +288,7 @@ export default function HistoryPage() {
                                 {invoice.history.map((h, index) => (
                                   <li key={index} className="flex items-center gap-2">
                                      <Badge variant="secondary">{h.status}</Badge>
-                                     <span>par <strong>{getAuthorDescription(h.by)}</strong> le {new Date(h.date).toLocaleDateString()}</span>
+                                     <span>par <strong>{getAuthorDescription(h.by)}</strong></span>
                                   </li>
                                 ))}
                               </ul>
@@ -338,3 +338,5 @@ export default function HistoryPage() {
     </div>
   )
 }
+
+    
