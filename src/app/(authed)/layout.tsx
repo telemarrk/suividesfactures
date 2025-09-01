@@ -8,15 +8,33 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { UserNav } from "@/components/user-nav";
 import { Logo } from "@/components/logo";
 import { useEffect, useState } from "react";
-import type { UserRole } from "@/lib/types";
+import type { UserRole, Service } from "@/lib/types";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { services as defaultServices } from "@/lib/data";
+
+
+const SERVICES_STORAGE_KEY = "app_services";
+
 
 export default function AuthedLayout({ children }: { children: React.ReactNode }) {
   const [userService, setUserService] = useState<UserRole | null>(null);
+  const [allServices, setAllServices] = useState<Service[]>([]);
+  const [serviceDescription, setServiceDescription] = useState<string>("");
+
 
   useEffect(() => {
     const service = localStorage.getItem("user_service") as UserRole | null;
     setUserService(service);
+
+    const storedServices = localStorage.getItem(SERVICES_STORAGE_KEY);
+    const services = storedServices ? JSON.parse(storedServices) : defaultServices;
+    setAllServices(services);
+
+    if(service && services.length > 0) {
+        const currentService = services.find(s => s.name === service);
+        setServiceDescription(currentService?.description || service);
+    }
+
   }, []);
 
   const canViewHistory = userService === 'SGFINANCES' || userService === 'SGCOMPUB'; 
@@ -111,8 +129,12 @@ export default function AuthedLayout({ children }: { children: React.ReactNode }
               </nav>
             </SheetContent>
           </Sheet>
-          <div className="w-full flex-1">
-            {/* Can add search form here */}
+          <div className="w-full flex-1 flex items-center justify-center">
+             {serviceDescription && (
+              <span className="text-sm font-medium text-muted-foreground">
+                Connecté en tant que : <strong className="text-foreground">{serviceDescription}</strong>
+              </span>
+            )}
           </div>
           <ThemeToggle />
           <UserNav />
